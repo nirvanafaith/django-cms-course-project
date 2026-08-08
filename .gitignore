@@ -11,6 +11,7 @@ db.sqlite3-journal
 media/
 staticfiles/
 static/collectstatic/
+logs/
 
 # ── 测试 / 覆盖率 ─────────────────────────────────────────
 .coverage
