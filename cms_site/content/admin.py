@@ -44,7 +44,7 @@ class ItemAdmin(admin.ModelAdmin):
     date_hierarchy = "publish_time"
     readonly_fields = ("updated_at",)
     list_per_page = 20
-    actions = ["mark_published", "mark_draft"]
+    actions = ("mark_published", "mark_draft")  # tuple 满足 RUF012（可变默认值）
 
     @admin.action(description="设为已发布")
     def mark_published(self, request, queryset):

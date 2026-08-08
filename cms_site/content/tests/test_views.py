@@ -61,7 +61,9 @@ class BrowseViewTests(BaseViewTests):
 
     def test_tit02_category_list_filter(self):
         """T-IT-02：/list/?category=id 仅显示该栏目文章。"""
-        resp = self.client.get(reverse("content:item_list"), {"category": self.cat_python.pk})
+        resp = self.client.get(
+            reverse("content:item_list"), {"category": self.cat_python.pk}
+        )
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Python 课程通知")
         self.assertContains(resp, "教学会议通知")
@@ -85,7 +87,9 @@ class BrowseViewTests(BaseViewTests):
         resp = self.client.get(reverse("content:item_detail", args=[self.draft.pk]))
         self.assertEqual(resp.status_code, 404)
         # 列表 → 不出现
-        resp = self.client.get(reverse("content:item_list"), {"category": self.cat_python.pk})
+        resp = self.client.get(
+            reverse("content:item_list"), {"category": self.cat_python.pk}
+        )
         self.assertNotContains(resp, "草稿文章不可见")
         # 首页 → 不出现
         resp = self.client.get(reverse("content:index"))
@@ -134,7 +138,9 @@ class SearchViewTests(BaseViewTests):
 
     def test_tit10_search_by_category(self):
         """T-IT-10：按栏目查询，与该栏目文章一致。"""
-        resp = self.client.get(reverse("content:search"), {"category": self.cat_python.pk})
+        resp = self.client.get(
+            reverse("content:search"), {"category": self.cat_python.pk}
+        )
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Python 课程通知")
         self.assertContains(resp, "教学会议通知")

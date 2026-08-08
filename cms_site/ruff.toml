@@ -1,0 +1,27 @@
+# ruff 配置（对应《详细设计文档》§3.2：Ruff lint + format，替代 flake8/black/isort）
+# 满足需求 NFR-04（PEP 8）与验收 T-ACC-06（ruff check 0 错误）。
+
+# 排除自动生成代码（Django migrations 由框架生成，含 RUF012 类属性警告）
+exclude = [
+    "content/migrations",
+    ".venv",
+    "staticfiles",
+]
+
+target-version = "py312"
+
+# 行宽：中文注释/测试代码使用 100（Django 官方 88，中文项目放宽以容纳中文注释）
+line-length = 100
+
+[lint]
+# 选择规则集：E（pycodestyle）/ F（pyflakes）/ I（isort）/ UP（pyupgrade）/
+# B（bugbear）/ SIM（flake8-simplify）/ RUF（ruff 专属）
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+# 中文注释/文档中的全角标点（RUF001~003）为合法中文排版，忽略
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+# migrations 的 RUF012 已通过 exclude 排除；
+# Django 框架约定（Meta.ordering 用 list）由代码层改为 tuple 满足 RUF012
+[lint.per-file-ignores]
+"config/settings.py" = ["E501"]  # settings 长行（URL/配置）允许

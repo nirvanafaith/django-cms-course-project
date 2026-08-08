@@ -11,7 +11,7 @@
 """
 
 import random
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -28,7 +28,18 @@ CATEGORIES = [
 ]
 
 # 标题关键词（便于三种查询模式演示）
-KEYWORDS = ["Python", "课程", "通知", "考试", "论文", "基金", "获奖", "比赛", "讲座", "公告"]
+KEYWORDS = [
+    "Python",
+    "课程",
+    "通知",
+    "考试",
+    "论文",
+    "基金",
+    "获奖",
+    "比赛",
+    "讲座",
+    "公告",
+]
 
 # 时间范围：2023-01-01 ~ 2026-08-31
 TIME_START = datetime(2023, 1, 1, tzinfo=timezone.get_current_timezone())
@@ -44,10 +55,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if Category.objects.exists():
-            self.stdout.write(self.style.WARNING(
-                f"数据已存在（栏目 {Category.objects.count()} 个、"
-                f"文章 {Item.objects.count()} 篇），跳过生成（幂等，T-SYS-01）"
-            ))
+            self.stdout.write(
+                self.style.WARNING(
+                    f"数据已存在（栏目 {Category.objects.count()} 个、"
+                    f"文章 {Item.objects.count()} 篇），跳过生成（幂等，T-SYS-01）"
+                )
+            )
             return
 
         rng = random.Random(RANDOM_SEED)  # 固定种子，保证可复现
@@ -55,7 +68,9 @@ class Command(BaseCommand):
         draft_count = 3  # 草稿数量（前台不可见验证点）
 
         for name, desc, count in CATEGORIES:
-            cat, _ = Category.objects.get_or_create(name=name, defaults={"description": desc})
+            cat, _ = Category.objects.get_or_create(
+                name=name, defaults={"description": desc}
+            )
             for i in range(count):
                 # 标题：关键词 + 序号 + 栏目名
                 kw = rng.choice(KEYWORDS)
@@ -74,10 +89,12 @@ class Command(BaseCommand):
                 )
                 total_items += 1
 
-        self.stdout.write(self.style.SUCCESS(
-            f"演示数据生成完成：栏目 {Category.objects.count()} 个，"
-            f"文章 {Item.objects.count()} 篇（含草稿 {draft_count} 篇）"
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"演示数据生成完成：栏目 {Category.objects.count()} 个，"
+                f"文章 {Item.objects.count()} 篇（含草稿 {draft_count} 篇）"
+            )
+        )
 
     def _content(self, cat_name, keyword):
         """生成一段可读的正文（含关键词与栏目名）。"""

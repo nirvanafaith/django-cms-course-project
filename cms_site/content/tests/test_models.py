@@ -32,9 +32,8 @@ class CategoryModelTests(TestCase):
     def test_tmd02_name_unique_rejected(self):
         """T-MD-02：同名栏目触发唯一约束（数据库层 IntegrityError）。"""
         Category.objects.create(name="教学动态")
-        with self.assertRaises(IntegrityError):
-            with transaction.atomic():
-                Category.objects.create(name="教学动态")
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Category.objects.create(name="教学动态")
 
     def test_tmd02b_name_unique_case_sensitive_default(self):
         """T-MD-02 补充：不同名不受影响。"""
@@ -52,9 +51,8 @@ class ItemModelTests(TestCase):
 
     def test_tmd03_item_requires_category(self):
         """T-MD-03：无栏目创建文章被拒绝（数据库非空外键约束）。"""
-        with self.assertRaises(IntegrityError):
-            with transaction.atomic():
-                Item.objects.create(title="无栏目文章", content="正文")
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Item.objects.create(title="无栏目文章", content="正文")
 
     def test_tmd04_delete_protected_when_items_exist(self):
         """T-MD-04：栏目下存在文章时删除 → ProtectedError，栏目保留。"""
@@ -71,10 +69,18 @@ class ItemModelTests(TestCase):
 
     def test_tmd05_default_ordering_by_publish_time_desc(self):
         """T-MD-05：默认按 publish_time 倒序。"""
-        old = Item.objects.create(title="旧文章", content="正文", category=self.cat,
-                                  publish_time=timezone.now() - timedelta(days=10))
-        new = Item.objects.create(title="新文章", content="正文", category=self.cat,
-                                  publish_time=timezone.now())
+        old = Item.objects.create(
+            title="旧文章",
+            content="正文",
+            category=self.cat,
+            publish_time=timezone.now() - timedelta(days=10),
+        )
+        new = Item.objects.create(
+            title="新文章",
+            content="正文",
+            category=self.cat,
+            publish_time=timezone.now(),
+        )
         self.assertEqual(list(Item.objects.all()), [new, old])
 
     def test_tmd06_default_is_published_true(self):
@@ -90,6 +96,10 @@ class ItemModelTests(TestCase):
 
     def test_tmd07_author_optional(self):
         """T-MD-07 补充：author 可空（FR-ART-01 扩展）。"""
-        user = get_user_model().objects.create_user(username="writer", password="x12345678")
-        item = Item.objects.create(title="有作者", content="正文", category=self.cat, author=user)
+        user = get_user_model().objects.create_user(
+            username="writer", password="x12345678"
+        )
+        item = Item.objects.create(
+            title="有作者", content="正文", category=self.cat, author=user
+        )
         self.assertEqual(item.author, user)

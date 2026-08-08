@@ -5,6 +5,7 @@ URL configuration for config project.
 - /            → content 应用（首页/列表/详情/搜索）
 - /admin/      → Django Admin（管理端 CRUD）
 """
+
 from django.contrib import admin
 from django.urls import include, path
 

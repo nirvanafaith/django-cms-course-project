@@ -115,9 +115,14 @@ class AdminCrudTests(TestCase):
         """T-ADM-04：管理员删文章 → 前台详情 404。"""
         item = Item.objects.create(title="待删除", content="正文", category=self.cat)
         # 先确认详情 200
-        self.assertEqual(self.client.get(reverse("content:item_detail", args=[item.pk])).status_code, 200)
+        self.assertEqual(
+            self.client.get(reverse("content:item_detail", args=[item.pk])).status_code,
+            200,
+        )
         # 删除（带确认）
-        resp = self.client.post(f"/admin/content/item/{item.pk}/delete/", {"post": "yes"})
+        resp = self.client.post(
+            f"/admin/content/item/{item.pk}/delete/", {"post": "yes"}
+        )
         self.assertEqual(resp.status_code, 302)
         # 前台 404
         resp = self.client.get(reverse("content:item_detail", args=[item.pk]))
@@ -137,7 +142,9 @@ class AdminCrudTests(TestCase):
         """T-ADM-07 补充：自定义 Action 批量发布/撤回（加分项，设计 §8）。"""
         # 3 篇草稿 → 批量发布
         items = [
-            Item.objects.create(title=f"草稿{i}", content="正文", category=self.cat, is_published=False)
+            Item.objects.create(
+                title=f"草稿{i}", content="正文", category=self.cat, is_published=False
+            )
             for i in range(3)
         ]
         ids = [i.pk for i in items]
@@ -158,4 +165,7 @@ class AdminCrudTests(TestCase):
         self.assertTrue(all(not Item.objects.get(pk=pk).is_published for pk in ids))
         # 前台均不可见
         for pk in ids:
-            self.assertEqual(self.client.get(reverse("content:item_detail", args=[pk])).status_code, 404)
+            self.assertEqual(
+                self.client.get(reverse("content:item_detail", args=[pk])).status_code,
+                404,
+            )

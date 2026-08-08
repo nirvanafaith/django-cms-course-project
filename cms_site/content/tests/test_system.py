@@ -47,7 +47,9 @@ class PublishCycleTests(TestCase):
         """建栏目→发文章→前台可见→改标题→前台更新→删文章→前台消失。"""
         cat = Category.objects.create(name="闭环栏目")
         item = Item.objects.create(
-            title="初始标题", content="正文", category=cat,
+            title="初始标题",
+            content="正文",
+            category=cat,
             publish_time=timezone.now(),
         )
         # 前台可见
@@ -61,7 +63,9 @@ class PublishCycleTests(TestCase):
         # 删除 → 前台消失
         pk = item.pk
         item.delete()
-        self.assertEqual(self.client.get(reverse("content:item_detail", args=[pk])).status_code, 404)
+        self.assertEqual(
+            self.client.get(reverse("content:item_detail", args=[pk])).status_code, 404
+        )
 
 
 class QueryLoopTests(TestCase):

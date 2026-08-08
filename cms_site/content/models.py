@@ -26,7 +26,7 @@ class Category(models.Model):
     class Meta:
         verbose_name = "栏目"
         verbose_name_plural = "栏目"
-        ordering = ["id"]
+        ordering = ("id",)  # tuple 满足 RUF012；Django Meta.ordering 接受任意序列
 
     def __str__(self):
         return self.name
@@ -49,7 +49,9 @@ class Item(models.Model):
         db_index=True,
     )
     updated_at = models.DateTimeField("最后修改时间", auto_now=True)
-    is_published = models.BooleanField("发布状态", default=True)  # 草稿前台不可见（FR-ART-05）
+    is_published = models.BooleanField(
+        "发布状态", default=True
+    )  # 草稿前台不可见（FR-ART-05）
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="作者",
@@ -61,7 +63,7 @@ class Item(models.Model):
     class Meta:
         verbose_name = "文章"
         verbose_name_plural = "文章"
-        ordering = ["-publish_time"]  # 默认发表时间倒序（T-MD-05）
+        ordering = ("-publish_time",)  # 默认发表时间倒序（T-MD-05）；tuple 满足 RUF012
 
     def __str__(self):
         return self.title

@@ -7,6 +7,7 @@ content 应用路由表（对应《详细设计文档》§7.1）。
 /item/<int:pk>/     item_detail     pk                   文章详情
 /search/            search          q/start/end/category  三种查询模式 + 组合（分页）
 """
+
 from django.urls import path
 
 from . import views

@@ -13,7 +13,8 @@
 - 表单校验失败 → 空结果 + 错误回显（不 500）
 """
 
-from datetime import datetime, time as dtime, timedelta
+from datetime import datetime, timedelta
+from datetime import time as dtime
 
 from django.core.paginator import Paginator
 from django.db.models import Count
@@ -100,7 +101,8 @@ def search(request):
         if cleaned.get("end"):
             # Django 将 lte=date 按当天 00:00 转换，会漏掉 end 当天记录；
             # 改用 end+1 天作开区间上界（保持走 publish_time 索引，见《技术报告》§5.1-3）
-            qs = qs.filter(publish_time__lt=_aware_midnight(cleaned["end"] + timedelta(days=1)))
+            end_exclusive = _aware_midnight(cleaned["end"] + timedelta(days=1))
+            qs = qs.filter(publish_time__lt=end_exclusive)
         if cleaned.get("category"):
             qs = qs.filter(category_id=cleaned["category"])
     else:

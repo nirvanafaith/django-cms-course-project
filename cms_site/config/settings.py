@@ -18,7 +18,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # 生产环境必须通过环境变量注入（NFR-02 生产配置要求）。
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-2bc5otkqv&mo8ui&o&&@#sv)x+^o9tbiqqeff1%(3^b=ksxbf*")
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-2bc5otkqv&mo8ui&o&&@#sv)x+^o9tbiqqeff1%(3^b=ksxbf*",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"

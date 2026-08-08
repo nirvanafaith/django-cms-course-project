@@ -9,8 +9,6 @@
 - T-SEC-06 会话 Cookie 属性（HttpOnly / SameSite）
 """
 
-from datetime import timedelta
-
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -68,6 +66,7 @@ class SecurityTests(TestCase):
         Django 测试客户端默认不强制 CSRF 校验，需用 enforce_csrf_checks=True 的客户端验证。
         """
         from django.test import Client as CsrfClient
+
         csrf_client = CsrfClient(enforce_csrf_checks=True)
         resp = csrf_client.post("/admin/login/", {"username": "x", "password": "y"})
         self.assertEqual(resp.status_code, 403)
@@ -84,5 +83,6 @@ class SecurityTests(TestCase):
         SESSION_COOKIE_HTTPONLY=True、SESSION_COOKIE_SAMESITE="Lax"。
         """
         from django.conf import settings
+
         self.assertTrue(settings.SESSION_COOKIE_HTTPONLY)
         self.assertEqual(settings.SESSION_COOKIE_SAMESITE, "Lax")
