@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="row">
+    <div class="col-lg-3">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">查询</h5>
+                {% if form %}
+                <form action="{% url 'content:search' %}" method="get">
+                    <div class="mb-3">
+                        <label class="form-label" for="id_q">题目关键词</label>
+                        {{ form.q }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_start">起始日期</label>
+                        {{ form.start }}
+                        {% if form.start.errors %}<div class="text-danger small">{{ form.start.errors }}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_end">结束日期</label>
+                        {{ form.end }}
+                        {% if form.end.errors %}<div class="text-danger small">{{ form.end.errors }}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_category">栏目</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}<div class="text-danger small">{{ form.category.errors }}</div>{% endif %}
+                    </div>
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger py-2 small">{{ form.non_field_errors }}</div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary w-100">查询</button>
+                </form>
+                {% else %}
+                <p class="text-muted small">浏览全部已发布文章。</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-9">
+        <h1 class="h4 mb-3">{{ page_title }}</h1>
+        <ul class="list-group shadow-sm">
+            {% for item in page_obj %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="{% url 'content:item_detail' item.pk %}" class="text-decoration-none">{{ item.title }}</a>
+                <small class="text-muted">{{ item.category.name }} · {{ item.publish_time|date:"Y-m-d H:i" }}</small>
+            </li>
+            {% empty %}
+            <li class="list-group-item text-muted">没有找到相关文章</li>
+            {% endfor %}
+        </ul>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+        <nav class="mt-4" aria-label="分页">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request_query %}&{{ request_query }}{% endif %}">上一页</a>
+                </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}{% if request_query %}&{{ request_query }}{% endif %}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request_query %}&{{ request_query }}{% endif %}">下一页</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        <p class="text-center text-muted small">共 {{ page_obj.paginator.num_pages }} 页 · 第 {{ page_obj.number }} 页</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
