@@ -1,0 +1,28 @@
+# ── Python ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ── Django ────────────────────────────────────────────────
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+static/collectstatic/
+
+# ── 测试 / 覆盖率 ─────────────────────────────────────────
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ── IDE / 操作系统 ─────────────────────────────────────────
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ── 工具运行目录（不入库）──────────────────────────────────
+.codegraph/
+.omo/
