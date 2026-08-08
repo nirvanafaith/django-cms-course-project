@@ -1,0 +1,35 @@
+{% comment %}
+查询表单组件（对应《详细设计文档》§4 目录树 search_form.html）。
+用于搜索页（search 视图传入 form），提供三种模式 + 组合查询的表单与错误回显。
+变量契约：form（SearchForm 实例）
+{% endcomment %}
+{% if form %}
+<form action="{% url 'content:search' %}" method="get">
+    <div class="mb-3">
+        <label class="form-label" for="id_q">题目关键词</label>
+        {{ form.q }}
+        {% if form.q.errors %}<div class="text-danger small">{{ form.q.errors }}</div>{% endif %}
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="id_start">起始日期</label>
+        {{ form.start }}
+        {% if form.start.errors %}<div class="text-danger small">{{ form.start.errors }}</div>{% endif %}
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="id_end">结束日期</label>
+        {{ form.end }}
+        {% if form.end.errors %}<div class="text-danger small">{{ form.end.errors }}</div>{% endif %}
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="id_category">栏目</label>
+        {{ form.category }}
+        {% if form.category.errors %}<div class="text-danger small">{{ form.category.errors }}</div>{% endif %}
+    </div>
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger py-2 small">{{ form.non_field_errors }}</div>
+    {% endif %}
+    <button type="submit" class="btn btn-primary w-100">查询</button>
+</form>
+{% else %}
+<p class="text-muted small">浏览全部已发布文章。</p>
+{% endif %}

@@ -1,0 +1,26 @@
+/* CMS 原型系统自定义样式（本地静态资源，Bootstrap 5 CDN 基础上的补充） */
+
+/* 统一卡片阴影与圆角 */
+.card {
+    border: none;
+    border-radius: 0.5rem;
+}
+
+/* 列表项悬停反馈 */
+.list-group-item {
+    transition: background-color 0.15s ease;
+}
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* 文章正文排版 */
+.content {
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+/* 页脚与主内容间距 */
+footer {
+    border-top: 1px solid #dee2e6;
+}
