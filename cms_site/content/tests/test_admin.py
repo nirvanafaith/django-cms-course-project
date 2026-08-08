@@ -132,3 +132,30 @@ class AdminCrudTests(TestCase):
         # Admin 对被引用对象：不删除、返回非 302（停留在确认/错误页）
         self.assertNotEqual(resp.status_code, 302)
         self.assertTrue(Category.objects.filter(pk=self.cat.pk).exists())
+
+    def test_tadm07_batch_publish_and_draft_actions(self):
+        """T-ADM-07 补充：自定义 Action 批量发布/撤回（加分项，设计 §8）。"""
+        # 3 篇草稿 → 批量发布
+        items = [
+            Item.objects.create(title=f"草稿{i}", content="正文", category=self.cat, is_published=False)
+            for i in range(3)
+        ]
+        ids = [i.pk for i in items]
+        resp = self.client.post(
+            "/admin/content/item/",
+            {"action": "mark_published", "_selected_action": ids},
+            follow=True,
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(all(Item.objects.get(pk=pk).is_published for pk in ids))
+        # 批量撤回为草稿
+        resp = self.client.post(
+            "/admin/content/item/",
+            {"action": "mark_draft", "_selected_action": ids},
+            follow=True,
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(all(not Item.objects.get(pk=pk).is_published for pk in ids))
+        # 前台均不可见
+        for pk in ids:
+            self.assertEqual(self.client.get(reverse("content:item_detail", args=[pk])).status_code, 404)
