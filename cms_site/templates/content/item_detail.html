@@ -1,27 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'content:index' %}">首页</a></li>
-        <li class="breadcrumb-item">
-            <a href="{% url 'content:item_list' %}?category={{ item.category.pk }}">{{ item.category.name }}</a>
-        </li>
-        <li class="breadcrumb-item active" aria-current="page">{{ item.title }}</li>
-    </ol>
-</nav>
-
-<article class="card shadow-sm">
-    <div class="card-body">
-        <h1 class="h3 mb-2">{{ item.title }}</h1>
-        <p class="text-muted small mb-4">
-            {{ item.category.name }} · {{ item.publish_time|date:"Y-m-d H:i" }}
-            {% if item.author %} · 作者：{{ item.author.username }}{% endif %}
-        </p>
-        <div class="content">{{ item.content|linebreaksbr }}</div>
-    </div>
+<nav class="breadcrumbs" aria-label="面包屑"><a href="{% url 'content:index' %}">首页</a><span aria-hidden="true">/</span><a href="{% url 'content:item_list' %}?category={{ item.category.pk }}">{{ item.category.name }}</a><span aria-hidden="true">/</span><span aria-current="page">正文</span></nav>
+<article class="article-page">
+    <header class="article-header"><p class="eyebrow">{{ item.category.name }}</p><h1>{{ item.title }}</h1><div class="article-meta"><time datetime="{{ item.publish_time|date:'c' }}">{{ item.publish_time|date:"Y-m-d H:i" }}</time>{% if item.author %}<span>作者：{{ item.author.username }}</span>{% endif %}</div></header>
+    <div class="article-content">{{ item.content|linebreaksbr }}</div>
+    <footer class="article-footer"><a class="button button-secondary" href="{% url 'content:item_list' %}?category={{ item.category.pk }}">返回该栏目</a></footer>
 </article>
-
-<p class="mt-3">
-    <a href="{% url 'content:item_list' %}?category={{ item.category.pk }}" class="btn btn-outline-primary btn-sm">← 返回该栏目</a>
-</p>
 {% endblock %}
