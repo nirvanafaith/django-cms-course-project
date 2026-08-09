@@ -18,7 +18,7 @@ from django.utils import timezone
 
 from content.models import Category, Item
 
-# 栏目定义：(名称, 简介, 文章数)
+# 每项依次是：栏目名称、简介、该栏目生成的文章数量；总数为 63 篇。
 CATEGORIES = [
     ("通知公告", "学校与学院级公告", 15),
     ("教学动态", "课程与教学安排", 12),
@@ -27,7 +27,7 @@ CATEGORIES = [
     ("失物招领", "失物与招领信息", 10),
 ]
 
-# 标题关键词（便于三种查询模式演示）
+# 关键词会进入标题，保证答辩时可以稳定演示题目模糊查询。
 KEYWORDS = [
     "Python",
     "课程",
@@ -41,7 +41,7 @@ KEYWORDS = [
     "公告",
 ]
 
-# 时间范围：2023-01-01 ~ 2026-08-31
+# 时区感知时间范围，避免 USE_TZ=True 时产生 naive datetime 警告。
 TIME_START = datetime(2023, 1, 1, tzinfo=timezone.get_current_timezone())
 TIME_END = datetime(2026, 8, 31, tzinfo=timezone.get_current_timezone())
 
@@ -54,6 +54,7 @@ class Command(BaseCommand):
     help = "生成演示数据（栏目 5 个、文章 63 篇），重复执行不会产生重复数据"
 
     def handle(self, *args, **options):
+        # 以栏目是否存在作为幂等哨兵：已有演示数据时整体跳过，不重复插入。
         if Category.objects.exists():
             self.stdout.write(
                 self.style.WARNING(
@@ -64,13 +65,12 @@ class Command(BaseCommand):
             return
 
         rng = random.Random(RANDOM_SEED)  # 固定种子，保证可复现
-        total_items = 0
+        total_items = 0  # 已生成文章计数，也用于决定前几篇是草稿。
         draft_count = 3  # 草稿数量（前台不可见验证点）
 
         for name, desc, count in CATEGORIES:
-            cat, _ = Category.objects.get_or_create(
-                name=name, defaults={"description": desc}
-            )
+            # get_or_create 让命令即使被部分执行，也不会重复创建同名栏目。
+            cat, _ = Category.objects.get_or_create(name=name, defaults={"description": desc})
             for i in range(count):
                 # 标题：关键词 + 序号 + 栏目名
                 kw = rng.choice(KEYWORDS)

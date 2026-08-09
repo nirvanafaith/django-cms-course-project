@@ -25,12 +25,16 @@ class CategoryAdmin(admin.ModelAdmin):
     ordering = ("id",)
 
     def get_queryset(self, request):
-        """列表页 annotate 文章数，避免每行再 Count 一次（N+1，见《技术报告》§5.1-1）。"""
+        """为后台列表附加文章总数，避免每行再执行一次 Count 查询。
+
+        这里统计全部文章，包含草稿；后台管理员需要知道栏目中实际保存了多少
+        条内容，这与前台只统计已发布文章的 selector 是两个有意不同的业务语义。
+        """
         return super().get_queryset(request).annotate(_item_count=Count("items"))
 
     @admin.display(description="文章数")
     def article_count(self, obj):
-        """栏目下文章总数（来自 annotate，单条 SQL 完成）。"""
+        """读取 ``get_queryset`` 预先 annotate 的计数，避免再次访问数据库。"""
         return getattr(obj, "_item_count", 0)
 
 
@@ -48,12 +52,12 @@ class ItemAdmin(admin.ModelAdmin):
 
     @admin.action(description="设为已发布")
     def mark_published(self, request, queryset):
-        """批量发布选中文章（FR-ART-05 扩展）。"""
+        """用一次批量 UPDATE 发布选中文章，并向管理员反馈影响行数。"""
         updated = queryset.update(is_published=True)
         self.message_user(request, f"已将 {updated} 篇文章设为发布")
 
     @admin.action(description="设为草稿")
     def mark_draft(self, request, queryset):
-        """批量撤回为草稿（前台不可见，FR-ART-05）。"""
+        """用一次批量 UPDATE 撤回文章；撤回后前台 selector 将自动隐藏它们。"""
         updated = queryset.update(is_published=False)
         self.message_user(request, f"已将 {updated} 篇文章设为草稿")
