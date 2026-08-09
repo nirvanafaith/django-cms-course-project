@@ -25,12 +25,14 @@ class SearchForm(forms.Form):
     start = forms.DateField(
         label="起始日期",
         required=False,
+        help_text="格式：YYYY-MM-DD",
         input_formats=["%Y-%m-%d"],  # 严格格式（T-FM-04/05）
         error_messages={"invalid": "日期格式应为 YYYY-MM-DD"},
     )
     end = forms.DateField(
         label="结束日期",
         required=False,
+        help_text="格式：YYYY-MM-DD",
         input_formats=["%Y-%m-%d"],
         error_messages={"invalid": "日期格式应为 YYYY-MM-DD"},
     )
@@ -43,9 +45,9 @@ class SearchForm(forms.Form):
     def __init__(self, *args, **kwargs):
         """动态构建栏目选项（来源 Category 全集）。"""
         super().__init__(*args, **kwargs)
-        self.fields["category"].choices = [
+        self.fields["category"].choices = [("", "全部栏目"), *[
             (cat.pk, cat.name) for cat in Category.objects.all()
-        ]
+        ]]
 
     def clean_category(self):
         """栏目清洗：空字符串 → None；合法 id → int（设计 §6.1「int 或 None」）。"""

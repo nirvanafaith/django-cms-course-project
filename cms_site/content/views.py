@@ -61,13 +61,16 @@ def item_list(request):
     """栏目文章列表：可选 category 参数筛选（T-IT-02），分页（FR-UI-02）。"""
     qs = _published_items().select_related("category")
     category_id = request.GET.get("category")
+    current_category = None
     if category_id:
         qs = qs.filter(category_id=category_id)  # 走外键索引
+        current_category = Category.objects.filter(pk=category_id).first()
     page_obj = Paginator(qs, PAGE_SIZE).get_page(request.GET.get("page"))
     context = {
         "page_obj": page_obj,
         "page_title": "文章列表",
         "request_query": _request_query(request),  # 分页链接保留参数（T-IT-16）
+        "current_category": current_category,
     }
     return render(request, "content/item_list.html", context)
 
@@ -90,6 +93,7 @@ def search(request):
     校验失败：qs = none()（不查库、不崩溃），错误信息随表单回显。
     """
     form = SearchForm(request.GET)
+    current_category = None
     if form.is_valid():
         qs = _published_items().select_related("category")
         cleaned = form.cleaned_data
@@ -105,6 +109,9 @@ def search(request):
             qs = qs.filter(publish_time__lt=end_exclusive)
         if cleaned.get("category"):
             qs = qs.filter(category_id=cleaned["category"])
+            current_category = Category.objects.filter(
+                pk=cleaned["category"]
+            ).first()
     else:
         qs = Item.objects.none()  # 校验失败不查库（T-IT-12：非法日期不 500）
 
@@ -114,5 +121,6 @@ def search(request):
         "page_obj": page_obj,
         "page_title": "搜索",
         "request_query": _request_query(request),  # 分页链接保留条件（T-IT-16）
+        "current_category": current_category,
     }
     return render(request, "content/item_list.html", context)
