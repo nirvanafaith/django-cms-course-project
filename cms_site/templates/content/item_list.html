@@ -1,51 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
-
-<div class="row">
-    <div class="col-lg-3">
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title">查询</h5>
-                {% include "content/search_form.html" %}
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-9">
-        <h1 class="h4 mb-3">{{ page_title }}</h1>
-        <ul class="list-group shadow-sm">
-            {% for item in page_obj %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <a href="{% url 'content:item_detail' item.pk %}" class="text-decoration-none">{{ item.title }}</a>
-                <small class="text-muted">{{ item.category.name }} · {{ item.publish_time|date:"Y-m-d H:i" }}</small>
-            </li>
-            {% empty %}
-            <li class="list-group-item text-muted">没有找到相关文章</li>
-            {% endfor %}
-        </ul>
-
-        {% if page_obj.paginator.num_pages > 1 %}
-        <nav class="mt-4" aria-label="分页">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request_query %}&{{ request_query }}{% endif %}">上一页</a>
-                </li>
-                {% endif %}
-                {% for num in page_obj.paginator.page_range %}
-                <li class="page-item {% if num == page_obj.number %}active{% endif %}">
-                    <a class="page-link" href="?page={{ num }}{% if request_query %}&{{ request_query }}{% endif %}">{{ num }}</a>
-                </li>
-                {% endfor %}
-                {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request_query %}&{{ request_query }}{% endif %}">下一页</a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-        <p class="text-center text-muted small">共 {{ page_obj.paginator.num_pages }} 页 · 第 {{ page_obj.number }} 页</p>
-        {% endif %}
-    </div>
+<header class="page-heading">
+    <p class="eyebrow">已发布内容</p><h1>{{ page_title }}</h1>
+    {% if current_category %}<p class="current-context">栏目：{{ current_category.name }}</p>{% endif %}
+    <p class="result-count">共 {{ page_obj.paginator.count }} 篇结果</p>
+    {% if form %}<div class="condition-summary" aria-label="当前查询条件">{% if form.is_valid %}{% if form.cleaned_data.q %}<span>题目关键词：{{ form.cleaned_data.q }}</span>{% endif %}{% if form.cleaned_data.start %}<span>从 {{ form.cleaned_data.start }} 起</span>{% endif %}{% if form.cleaned_data.end %}<span>至 {{ form.cleaned_data.end }} 止</span>{% endif %}{% if current_category %}<span>栏目：{{ current_category.name }}</span>{% endif %}{% if not form.cleaned_data.q and not form.cleaned_data.start and not form.cleaned_data.end and not current_category %}<span>无条件，显示全部已发布文章</span>{% endif %}{% else %}<span>查询条件有误，请修正后重新查询。</span>{% endif %}</div>{% endif %}
+</header>
+<div class="results-layout">
+    <aside class="filter-panel" aria-label="查询面板"><h2>筛选文章</h2>{% include "content/search_form.html" %}</aside>
+    <section class="results-panel" aria-label="文章结果">
+        {% if page_obj %}<ul class="article-list">{% for item in page_obj %}<li class="article-row"><a href="{% url 'content:item_detail' item.pk %}">{{ item.title }}</a><span>{{ item.category.name }} · {{ item.publish_time|date:"Y-m-d H:i" }}</span></li>{% endfor %}</ul>
+        {% else %}<div class="empty-state" role="status"><h2>没有找到相关文章</h2><p>尝试放宽条件，或返回全部文章继续浏览。</p><div class="action-cluster">{% if form %}<a class="button button-secondary" href="{% url 'content:search' %}">清除条件</a>{% endif %}<a class="button button-secondary" href="{% url 'content:item_list' %}">查看全部文章</a></div></div>{% endif %}
+        {% include "partials/pagination.html" %}
+    </section>
 </div>
 {% endblock %}
