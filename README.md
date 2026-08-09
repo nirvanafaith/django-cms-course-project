@@ -36,7 +36,7 @@ python -m venv .venv
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py seed_data
-python manage.py createsuperuser   # 演示账号 admin / admin123456
+python manage.py createsuperuser   # 演示账号 ctx / 1234321
 python manage.py runserver
 ```
 
