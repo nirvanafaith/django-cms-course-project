@@ -16,6 +16,19 @@ from django.db import models
 from django.utils import timezone
 
 
+class ItemQuerySet(models.QuerySet):
+    """文章查询集合，集中保存可被多个页面复用的数据访问规则。
+
+    Django QuerySet 采用惰性求值：调用 ``published()`` 只会继续构造 SQL，直到
+    模板遍历、调用 ``list()`` 或执行 ``exists()`` 等操作时才真正访问数据库。
+    因此该方法既能复用“草稿不可见”规则，也不会提前加载无用数据。
+    """
+
+    def published(self):
+        """返回前台允许公开展示的文章，并保留 QuerySet 的链式调用能力。"""
+        return self.filter(is_published=True)
+
+
 class Category(models.Model):
     """栏目（文章的分类目录）。"""
 
@@ -26,7 +39,8 @@ class Category(models.Model):
     class Meta:
         verbose_name = "栏目"
         verbose_name_plural = "栏目"
-        ordering = ("id",)  # tuple 满足 RUF012；Django Meta.ordering 接受任意序列
+        # 与已提交迁移保持同一序列表示；它只影响默认排序，不新增数据库字段。
+        ordering = ["id"]  # noqa: RUF012 - must match the committed migration
 
     def __str__(self):
         return self.name
@@ -34,6 +48,10 @@ class Category(models.Model):
 
 class Item(models.Model):
     """文章（内容条目）。"""
+
+    # as_manager() 把 QuerySet 方法暴露为 Item.objects.published()。
+    # Manager 只改变 Python 查询接口，不增加数据库字段，所以不会产生迁移。
+    objects = ItemQuerySet.as_manager()
 
     title = models.CharField("标题", max_length=200)
     content = models.TextField("正文", blank=True)  # 正文允许空串（设计取舍 D-06）
@@ -49,9 +67,7 @@ class Item(models.Model):
         db_index=True,
     )
     updated_at = models.DateTimeField("最后修改时间", auto_now=True)
-    is_published = models.BooleanField(
-        "发布状态", default=True
-    )  # 草稿前台不可见（FR-ART-05）
+    is_published = models.BooleanField("发布状态", default=True)  # 草稿前台不可见（FR-ART-05）
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="作者",
@@ -63,7 +79,8 @@ class Item(models.Model):
     class Meta:
         verbose_name = "文章"
         verbose_name_plural = "文章"
-        ordering = ("-publish_time",)  # 默认发表时间倒序（T-MD-05）；tuple 满足 RUF012
+        # 最新文章优先；列表形式与初始迁移保持一致。
+        ordering = ["-publish_time"]  # noqa: RUF012 - must match the committed migration
 
     def __str__(self):
         return self.title
