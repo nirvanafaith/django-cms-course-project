@@ -80,7 +80,7 @@ class SearchFormTests(TestCase):
         self.assertEqual(form.cleaned_data["end"].isoformat(), "2026-12-31")
 
     def test_tfm08c_valid_category_id(self):
-        """T-FM-08c：合法栏目 id 通过。"""
+        """T-FM-08c：合法栏目 id 被解析为可信的 Category 对象。"""
         form = SearchForm({"category": str(self.cat.pk)})
         self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data["category"], self.cat.pk)
+        self.assertEqual(form.cleaned_data["category"], self.cat)

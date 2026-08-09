@@ -36,25 +36,12 @@ class SearchForm(forms.Form):
         input_formats=["%Y-%m-%d"],
         error_messages={"invalid": "日期格式应为 YYYY-MM-DD"},
     )
-    category = forms.ChoiceField(
+    category = forms.ModelChoiceField(
         label="栏目",
         required=False,
-        choices=[],  # 在 __init__ 中动态填充（Django 官方推荐做法）
+        queryset=Category.objects.all(),
+        empty_label="全部栏目",
     )
-
-    def __init__(self, *args, **kwargs):
-        """动态构建栏目选项（来源 Category 全集）。"""
-        super().__init__(*args, **kwargs)
-        self.fields["category"].choices = [("", "全部栏目"), *[
-            (cat.pk, cat.name) for cat in Category.objects.all()
-        ]]
-
-    def clean_category(self):
-        """栏目清洗：空字符串 → None；合法 id → int（设计 §6.1「int 或 None」）。"""
-        value = self.cleaned_data.get("category")
-        if value in (None, ""):
-            return None
-        return int(value)
 
     def clean_q(self):
         """关键词清洗：空字符串 → None（T-FM-01：空表单全部字段 None）。"""
