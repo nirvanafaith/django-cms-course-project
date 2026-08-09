@@ -1,0 +1,18 @@
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="page-navigation" aria-label="分页">
+    <ul class="pagination-list">
+        {% if page_obj.has_previous %}
+        <li><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request_query %}&{{ request_query }}{% endif %}">上一页</a></li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+        <li><a class="page-link{% if num == page_obj.number %} is-current{% endif %}"
+               href="?page={{ num }}{% if request_query %}&{{ request_query }}{% endif %}"
+               {% if num == page_obj.number %}aria-current="page"{% endif %}>{{ num }}</a></li>
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <li><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request_query %}&{{ request_query }}{% endif %}">下一页</a></li>
+        {% endif %}
+    </ul>
+</nav>
+<p class="pagination-info">共 {{ page_obj.paginator.num_pages }} 页 · 第 {{ page_obj.number }} 页</p>
+{% endif %}
