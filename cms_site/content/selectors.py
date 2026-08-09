@@ -1,0 +1,68 @@
+"""前台页面使用的只读数据库查询。
+
+Selector（查询器）只负责使用 Django ORM 读取数据，不读取 ``HttpRequest``，
+也不决定模板、分页或 HTTP 状态码。视图只需传入已经过表单校验的 Python 值，
+因此查询规则可以脱离浏览器请求进行独立测试和复用。
+"""
+
+from datetime import date, datetime, time, timedelta
+
+from django.db.models import Count, Q, QuerySet
+from django.utils import timezone
+
+from .models import Category, Item
+
+
+def _aware_midnight(day: date) -> datetime:
+    """把一个日期转换为当前时区当天 00:00 的时区感知时间。"""
+    naive_midnight = datetime.combine(day, time.min)
+    return timezone.make_aware(naive_midnight)
+
+
+def categories_with_item_counts() -> QuerySet[Category]:
+    """返回全部栏目，并附加前台可见文章数 ``item_count``。"""
+    # Count 的 filter 参数让数据库只统计已发布文章；草稿不会出现在前台计数中。
+    return Category.objects.annotate(item_count=Count("items", filter=Q(items__is_published=True)))
+
+
+def latest_published_items(limit: int = 8) -> QuerySet[Item]:
+    """返回指定数量的最新已发布文章，并在同一条 SQL 中读取所属栏目。"""
+    # select_related 使用 SQL JOIN 预加载外键，避免模板逐篇读取栏目时出现 N+1 查询。
+    return Item.objects.published().select_related("category")[:limit]
+
+
+def published_items_for_category(
+    category_id: int | str | None = None,
+) -> QuerySet[Item]:
+    """返回已发布文章；提供栏目主键时进一步限定所属栏目。"""
+    queryset = Item.objects.published().select_related("category")
+    if category_id:
+        queryset = queryset.filter(category_id=category_id)
+    return queryset
+
+
+def published_item_by_pk(pk: int) -> Item:
+    """按主键返回一篇已发布文章；不存在或为草稿时抛出 ``DoesNotExist``。"""
+    return Item.objects.published().select_related("category").get(pk=pk)
+
+
+def search_published_items(
+    *,
+    keyword: str | None = None,
+    start: date | None = None,
+    end: date | None = None,
+    category: Category | None = None,
+) -> QuerySet[Item]:
+    """根据已校验的可选条件，以 AND 语义组合已发布文章查询。"""
+    queryset = Item.objects.published().select_related("category")
+    if keyword:
+        queryset = queryset.filter(title__icontains=keyword)
+    if start:
+        queryset = queryset.filter(publish_time__gte=_aware_midnight(start))
+    if end:
+        # 使用“下一天零点之前”的开区间，才能包含结束日期当天的全部时刻。
+        end_exclusive = _aware_midnight(end + timedelta(days=1))
+        queryset = queryset.filter(publish_time__lt=end_exclusive)
+    if category:
+        queryset = queryset.filter(category=category)
+    return queryset
