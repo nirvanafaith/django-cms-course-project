@@ -1,33 +1,43 @@
 {% extends "base.html" %}
 {% block title %}首页 · CMS 原型系统{% endblock %}
 {% block content %}
-<h1 class="h3 mb-4">栏目导航</h1>
-<div class="row g-3 mb-5">
-    {% for cat in categories %}
-    <div class="col-md-4 col-sm-6">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <a href="{% url 'content:item_list' %}?category={{ cat.pk }}" class="text-decoration-none">{{ cat.name }}</a>
-                </h5>
-                <p class="card-text text-muted">{{ cat.item_count }} 篇文章</p>
-            </div>
-        </div>
+<section class="welcome" aria-labelledby="welcome-title">
+    <p class="eyebrow">校园内容中心</p>
+    <h1 id="welcome-title">浏览栏目或查找文章</h1>
+    <p class="welcome-copy">从栏目开始探索，也可以按题目、发表时间与栏目组合查询。</p>
+    <div class="action-cluster">
+        <a class="button button-primary" href="{% url 'content:item_list' %}">浏览全部文章</a>
+        <a class="button button-secondary" href="{% url 'content:search' %}">搜索文章</a>
     </div>
-    {% empty %}
-    <div class="col-12"><p class="text-muted">暂无栏目</p></div>
-    {% endfor %}
-</div>
+</section>
 
-<h2 class="h4 mb-3">最新文章</h2>
-<ul class="list-group shadow-sm">
-    {% for item in latest_items %}
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-        <a href="{% url 'content:item_detail' item.pk %}" class="text-decoration-none">{{ item.title }}</a>
-        <small class="text-muted">{{ item.category.name }} · {{ item.publish_time|date:"Y-m-d H:i" }}</small>
-    </li>
-    {% empty %}
-    <li class="list-group-item text-muted">暂无已发布文章</li>
-    {% endfor %}
-</ul>
+<section class="content-section" aria-labelledby="category-title">
+    <div class="section-heading"><h2 id="category-title">栏目导航</h2><p>选择一个主题开始浏览</p></div>
+    {% if categories %}
+    <div class="category-grid">
+        {% for cat in categories %}
+        <a class="category-entry" href="{% url 'content:item_list' %}?category={{ cat.pk }}">
+            <span class="category-name">{{ cat.name }}</span>
+            {% if cat.description %}<span class="category-description">{{ cat.description }}</span>{% endif %}
+            <span class="category-count">{{ cat.item_count }} 篇文章</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state" role="status"><h3>还没有创建栏目</h3><p>管理员创建栏目后，将在这里显示。</p></div>
+    {% endif %}
+</section>
+
+<section class="content-section" aria-labelledby="latest-title">
+    <div class="section-heading"><h2 id="latest-title">最新文章</h2><a href="{% url 'content:item_list' %}">查看全部</a></div>
+    {% if latest_items %}
+    <ul class="article-list">
+        {% for item in latest_items %}
+        <li class="article-row"><a href="{% url 'content:item_detail' item.pk %}">{{ item.title }}</a><span>{{ item.category.name }} · {{ item.publish_time|date:"Y-m-d H:i" }}</span></li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state" role="status"><h3>还没有已发布文章</h3><p>文章发布后，将按时间显示在这里。</p></div>
+    {% endif %}
+</section>
 {% endblock %}
