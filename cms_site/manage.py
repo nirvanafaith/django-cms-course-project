@@ -1,12 +1,16 @@
 #!/usr/bin/env python
-"""Django's command-line utility for administrative tasks."""
+"""Django 命令行入口。
+
+``sys.argv`` 保存用户输入的命令，例如 ``migrate``、``test`` 或 ``runserver``；
+``execute_from_command_line`` 再把它交给 Django 的命令分发系统。
+"""
 
 import os
 import sys
 
 
 def main():
-    """Run administrative tasks."""
+    """设置项目配置模块并执行用户指定的 Django 管理命令。"""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
     try:
         from django.core.management import execute_from_command_line

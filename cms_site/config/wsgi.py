@@ -1,7 +1,7 @@
-"""
-WSGI config for config project.
+"""WSGI 同步服务器入口。
 
-It exposes the WSGI callable as a module-level variable named ``application``.
+WSGI 是传统 Python Web 服务器与 Django 之间的接口标准。Waitress、Gunicorn
+等部署工具会导入这里的 ``application``，而不是重新执行每个视图文件。
 
 For more information on this file, see
 https://docs.djangoproject.com/en/5.2/howto/deployment/wsgi/
