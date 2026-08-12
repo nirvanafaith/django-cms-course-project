@@ -11,8 +11,14 @@ from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("health/", include("core.urls")),
     path("", include("content.urls")),
 ]
+
+handler400 = "core.views.handler400"
+handler403 = "core.views.handler403"
+handler404 = "core.views.handler404"
+handler500 = "core.views.handler500"
 
 # Admin 站点标题中文化
 admin.site.site_header = "CMS 原型系统管理后台"
