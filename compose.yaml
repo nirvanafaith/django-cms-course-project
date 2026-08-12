@@ -1,0 +1,102 @@
+x-app-environment: &app-environment
+  DJANGO_MODE: local
+  DJANGO_DEBUG: "0"
+  DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env}
+  DJANGO_ALLOWED_HOSTS: 127.0.0.1,localhost
+  CSRF_TRUSTED_ORIGINS: http://127.0.0.1:${APP_PORT:-8000},http://localhost:${APP_PORT:-8000}
+  DB_ENGINE: mysql
+  DB_NAME: ${MYSQL_DATABASE:-cms}
+  DB_USER: ${MYSQL_USER:-cms_user}
+  DB_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+  DB_HOST: db
+  DB_PORT: "3306"
+  REDIS_URL: redis://redis:6379/0
+  WAITRESS_HOST: 0.0.0.0
+  WAITRESS_PORT: "8000"
+  WAITRESS_THREADS: "8"
+  TRUST_PROXY_HEADERS: "0"
+  WAITRESS_TRUSTED_PROXY: 127.0.0.1
+
+x-app-service: &app-service
+  build:
+    context: ./cms_site
+  environment: *app-environment
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-cms}
+      MYSQL_USER: ${MYSQL_USER:-cms_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h 127.0.0.1 -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    logging: *default-logging
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    logging: *default-logging
+
+  migrate:
+    <<: *app-service
+    command:
+      - /bin/sh
+      - -c
+      - python manage.py migrate --noinput && python manage.py seed_data
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: "no"
+    logging: *default-logging
+
+  web:
+    <<: *app-service
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:${APP_PORT:-8000}:8000
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready/', timeout=3)
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging: *default-logging
+
+volumes:
+  mysql-data:
