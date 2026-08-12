@@ -7,7 +7,7 @@
 - Python 3.12、Django 5.2
 - SQLite（本地开发与课程演示）
 - Django Templates、原生 CSS 与 JavaScript
-- Django TestCase、Ruff
+- Waitress、WhiteNoise、MySQL、Redis、cpolar
 
 ## 项目结构
 
@@ -20,6 +20,7 @@
 │   │   ├── pagination.py # 分页和翻页参数工具
 │   │   ├── forms.py      # SearchForm 输入校验与类型转换
 │   │   └── views.py      # HTTP 请求/响应编排
+│   ├── core/             # 健康检查、缓存、限流与部署命令
 │   ├── templates/       # 页面模板
 │   ├── static/          # 静态资源
 │   └── requirements.txt # 依赖锁定
@@ -35,7 +36,9 @@
 - 搜索条件随分页链接保留，非法日期和页码可安全处理
 - 使用 `select_related`、聚合查询和数据库索引控制常见查询开销
 - 使用 `python manage.py seed_data` 生成固定的 5 个栏目和 63 篇演示文章
-- 自动化测试覆盖模型、表单、查询器、分页、视图、Admin、安全与 UI 上下文
+- Waitress 8 线程并发服务，Redis 热点缓存与 Admin 登录限流
+- cpolar 随机 HTTPS 域名公网访问，严格 Host/CSRF 校验
+- Docker Compose 一键集成 Waitress、MySQL 与 Redis
 
 ## 快速开始
 
@@ -51,40 +54,44 @@ python -m pip install -r requirements.txt
 python manage.py migrate
 python manage.py seed_data
 python manage.py createsuperuser
-python manage.py runserver
+set DB_ENGINE=mysql
+set DB_NAME=cms
+set DB_USER=cms_user
+set DB_PASSWORD=你的数据库密码
+set REDIS_URL=redis://127.0.0.1:6379/0
 ```
 
-之后可双击项目根目录的 `启动系统.bat`。脚本会执行迁移、幂等初始化演示数据、启动开发服务器并打开浏览器；使用前需完成上述虚拟环境和依赖安装。
+之后可双击项目根目录的 `启动系统.bat`。脚本会检查 MySQL/Redis、执行迁移、初始化演示数据、收集静态文件并以 Waitress 启动本地服务。
+
+公网模式还需设置 `DJANGO_SECRET_KEY`，完成一次 `cpolar authtoken <你的令牌>`，然后双击 `启动公网系统.bat`。脚本会建立随机 HTTPS 隧道并输出、打开公网地址。凭据不得写入 BAT。
 
 - 前台首页：http://127.0.0.1:8000/
 - 后台管理：http://127.0.0.1:8000/admin/
 
 完整部署步骤见 `docs/06_系统部署说明书.md`；技术论证见 `docs/08_技术报告.md`。
 
-## 测试与质量检查
+项目数据库、虚拟环境、日志、上传文件和工具缓存均由 `.gitignore` 排除。正式运行必须使用 MySQL；SQLite 只允许通过 `DB_ENGINE=sqlite` 显式用于本地开发。公网启动器会自动注入随机域名对应的 Host 与 CSRF 配置。
 
-在 `cms_site` 目录执行：
+### Docker Compose
+
+安装 Docker Desktop 或 Docker Engine 后，在项目根目录执行：
 
 ```powershell
-.\.venv\Scripts\python.exe manage.py test
-.\.venv\Scripts\python.exe -m ruff check .
+Copy-Item .env.example .env
+# 将 .env 中的三个 replace-with-* 值替换为独立的随机密钥
+docker compose up --build --wait
+docker compose logs -f web
 ```
 
-项目数据库、虚拟环境、日志、上传文件和工具缓存均由 `.gitignore` 排除。生产部署时请通过环境变量设置 `DJANGO_SECRET_KEY`、`DJANGO_DEBUG` 和 `DJANGO_ALLOWED_HOSTS`，不要使用开发默认值。
+Compose 只向宿主机 `127.0.0.1` 发布 Web 端口，MySQL 和 Redis 仅在容器网络内可见。`migrate` 服务会在依赖健康后执行迁移和幂等演示数据初始化，成功退出后才启动 Web。
+
+停止服务使用 `docker compose down`。MySQL 数据保存在 `mysql-data` 命名卷中；`docker compose down -v` 会永久删除该卷，只能在确认需要重置数据时执行。
 
 ## 文档索引
 
 | 文档 | 说明 |
 | --- | --- |
-| `docs/00_交付物与符合性对照.md` | 交付物清单与题目符合性总览 |
 | `docs/01_需求分析文档.md` | 需求基线（FR/NFR） |
 | `docs/02_详细设计文档.md` | 数据库/表单/视图/Admin/安全/取舍 |
-| `docs/03_测试文档.md` | 测试用例设计与测试分类 |
 | `docs/04_概要设计文档.md` | 模块划分与接口设计 |
-| `docs/05_测试报告.md` | 测试执行结果（编码后回填） |
 | `docs/06_系统部署说明书.md` | 部署/迁移/启动/测试 |
-| `docs/07_AI使用说明.md` | AI 使用透明化声明 |
-| `docs/08_技术报告.md` | 技术路线/BCNF 证明/算法复杂度/实现计划 |
-| `docs/09_操作说明书.md` | 前台/后台操作手册（用户与管理员） |
-| `docs/10_人工验收测试流程表.md` | 人工操作验收执行表（48 项） |
-| `docs/11_答辩报告.md` | 面向初学者的逐文件、逐函数、逐变量答辩说明 |
