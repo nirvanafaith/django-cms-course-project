@@ -10,7 +10,10 @@
 """
 
 from django.contrib import admin
+from django.db import transaction
 from django.db.models import Count
+
+from core.caching import invalidate_items
 
 from .models import Category, Item
 
@@ -53,11 +56,15 @@ class ItemAdmin(admin.ModelAdmin):
     @admin.action(description="设为已发布")
     def mark_published(self, request, queryset):
         """用一次批量 UPDATE 发布选中文章，并向管理员反馈影响行数。"""
+        primary_keys = tuple(queryset.values_list("pk", flat=True))
         updated = queryset.update(is_published=True)
+        transaction.on_commit(lambda: invalidate_items(primary_keys))
         self.message_user(request, f"已将 {updated} 篇文章设为发布")
 
     @admin.action(description="设为草稿")
     def mark_draft(self, request, queryset):
         """用一次批量 UPDATE 撤回文章；撤回后前台 selector 将自动隐藏它们。"""
+        primary_keys = tuple(queryset.values_list("pk", flat=True))
         updated = queryset.update(is_published=False)
+        transaction.on_commit(lambda: invalidate_items(primary_keys))
         self.message_user(request, f"已将 {updated} 篇文章设为草稿")

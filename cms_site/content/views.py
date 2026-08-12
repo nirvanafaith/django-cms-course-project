@@ -6,8 +6,11 @@ selector 和分页辅助函数、组装模板上下文，然后返回 HTTP 响�
 主要变化原因，也更容易在答辩中解释调用链。
 """
 
+from django.conf import settings
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import render
+
+from core.caching import get_or_load, home_cache_key, item_cache_key
 
 from .forms import SearchForm
 from .models import Category, Item
@@ -23,11 +26,18 @@ from .selectors import (
 
 def index(request: HttpRequest) -> HttpResponse:
     """渲染首页：栏目导航和最新八篇已发布文章。"""
-    context = {
-        "categories": categories_with_item_counts(),
-        "latest_items": latest_published_items(),
-        "page_title": "首页",
-    }
+    def load_home_data():
+        return {
+            "categories": list(categories_with_item_counts()),
+            "latest_items": list(latest_published_items()),
+        }
+
+    context = (
+        get_or_load(home_cache_key(), 30, load_home_data)
+        if settings.PUBLIC_PAGE_CACHE_ENABLED
+        else load_home_data()
+    )
+    context["page_title"] = "首页"
     return render(request, "content/index.html", context)
 
 
@@ -50,7 +60,11 @@ def item_list(request: HttpRequest) -> HttpResponse:
 def item_detail(request: HttpRequest, pk: int) -> HttpResponse:
     """渲染已发布文章详情；草稿和不存在的主键都返回 404。"""
     try:
-        item = published_item_by_pk(pk)
+        item = (
+            get_or_load(item_cache_key(pk), 60, lambda: published_item_by_pk(pk))
+            if settings.PUBLIC_PAGE_CACHE_ENABLED
+            else published_item_by_pk(pk)
+        )
     except Item.DoesNotExist as error:
         # 对普通访问者隐藏草稿是否存在，和不存在的文章使用相同 HTTP 结果。
         raise Http404("文章不存在或尚未发布") from error
