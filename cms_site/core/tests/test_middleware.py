@@ -26,8 +26,8 @@ class ClientIpTests(SimpleTestCase):
         self.assertEqual(result, "10.0.0.5")
 
     @override_settings(TRUST_PROXY_HEADERS=True)
-    def test_uses_first_forwarded_address_when_proxy_headers_are_trusted(self) -> None:
-        """受信任代理链使用最左侧的原始客户端地址。"""
+    def test_uses_waitress_normalized_remote_address(self) -> None:
+        """业务层只读取由 Waitress 完成代理清理后的地址。"""
         request = self.factory.get(
             "/",
             REMOTE_ADDR="127.0.0.1",
@@ -36,4 +36,4 @@ class ClientIpTests(SimpleTestCase):
 
         result = client_ip(request)
 
-        self.assertEqual(result, "203.0.113.8")
+        self.assertEqual(result, "127.0.0.1")

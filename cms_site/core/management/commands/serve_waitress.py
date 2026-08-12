@@ -29,6 +29,7 @@ class Command(BaseCommand):
             max_request_body_size=10 * 1024 * 1024,
             expose_tracebacks=False,
             trusted_proxy=settings.WAITRESS_TRUSTED_PROXY,
+            trusted_proxy_count=1,
             trusted_proxy_headers=trusted_proxy_headers,
             clear_untrusted_proxy_headers=True,
         )

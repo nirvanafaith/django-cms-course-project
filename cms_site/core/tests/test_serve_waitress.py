@@ -46,6 +46,7 @@ class ServeWaitressTests(SimpleTestCase):
         self.assertEqual(arguments["host"], "0.0.0.0")
         self.assertEqual(arguments["port"], 8080)
         self.assertEqual(arguments["threads"], 4)
+        self.assertEqual(arguments["trusted_proxy_count"], 1)
         self.assertEqual(
             arguments["trusted_proxy_headers"],
             {"x-forwarded-for", "x-forwarded-proto"},

@@ -20,12 +20,7 @@ security_logger = logging.getLogger("cms.security")
 
 
 def client_ip(request: HttpRequest) -> str:
-    """返回经过运行配置授权的客户端地址。"""
-    if settings.TRUST_PROXY_HEADERS:
-        forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
-        first_address = forwarded.partition(",")[0].strip()
-        if first_address:
-            return first_address
+    """返回由 WSGI 服务器完成代理清理后的客户端地址。"""
     return request.META.get("REMOTE_ADDR", "unknown")
 
 
