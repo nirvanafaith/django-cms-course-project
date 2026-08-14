@@ -14,11 +14,6 @@ staticfiles/
 static/collectstatic/
 logs/
 
-# ── 测试 / 覆盖率 ─────────────────────────────────────────
-.coverage
-htmlcov/
-.pytest_cache/
-
 # ── IDE / 操作系统 ─────────────────────────────────────────
 .idea/
 .vscode/
