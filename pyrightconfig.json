@@ -1,0 +1,10 @@
+{
+  "include": ["cms_site/config", "cms_site/content", "cms_site/core", "cms_site/tests"],
+  "exclude": ["cms_site/.venv", "cms_site/staticfiles"],
+  "extraPaths": ["cms_site"],
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "standard",
+  "reportMissingTypeStubs": false,
+  "venvPath": "cms_site",
+  "venv": ".venv"
+}
