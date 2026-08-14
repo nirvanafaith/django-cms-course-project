@@ -23,8 +23,8 @@ if not defined DJANGO_SECRET_KEY (
     echo [ERROR] DJANGO_SECRET_KEY is required for public mode.
     exit /b 1
 )
-if not defined DB_NAME (
-    echo [ERROR] DB_NAME, DB_USER and DB_PASSWORD are required.
+if not defined POSTGRES_DB (
+    echo [ERROR] POSTGRES_DB, POSTGRES_USER and POSTGRES_PASSWORD are required.
     exit /b 1
 )
 if not defined REDIS_URL (

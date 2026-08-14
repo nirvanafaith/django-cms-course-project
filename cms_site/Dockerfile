@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-
 FROM python:3.12-slim AS builder
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
@@ -26,13 +24,19 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 ARG UID=10001
 RUN adduser --disabled-password --gecos "" --home /nonexistent \
-    --shell /usr/sbin/nologin --no-create-home --uid "${UID}" cms
+    --shell /usr/sbin/nologin --no-create-home --uid "${UID}" cms \
+    && mkdir -p /app/logs \
+    && chown "${UID}:${UID}" /app/logs
 
 WORKDIR /app
 COPY --from=builder /opt/venv /opt/venv
 COPY . .
 
-RUN DJANGO_TEST=1 DB_ENGINE=sqlite python manage.py collectstatic --noinput
+RUN DJANGO_TEST=1 \
+    POSTGRES_DB=build \
+    POSTGRES_USER=build \
+    POSTGRES_PASSWORD=build \
+    python manage.py collectstatic --noinput
 
 EXPOSE 8000
 USER cms

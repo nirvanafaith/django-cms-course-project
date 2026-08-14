@@ -21,7 +21,7 @@ class Command(BaseCommand):
             with connections["default"].cursor() as cursor:
                 cursor.execute("SELECT 1")
         except DatabaseError as error:
-            raise CommandError("数据库不可用，请检查 MySQL 配置和服务状态") from error
+            raise CommandError("数据库不可用，请检查 PostgreSQL 配置和服务状态") from error
 
         try:
             cache.set("cms:preflight", "ok", timeout=5)
@@ -30,11 +30,11 @@ class Command(BaseCommand):
         except (ConnectionError, RedisError) as error:
             if mode == "public":
                 raise CommandError("公网模式要求 Redis 可用") from error
-            self.stdout.write(self.style.WARNING("Redis 不可用，本地模式将使用降级缓存"))
+            self.stdout.write("Redis 不可用，本地模式将使用降级缓存")
 
         if mode == "public":
             issues = run_checks(tags=[Tags.security], include_deployment_checks=True)
             serious = [issue for issue in issues if issue.is_serious()]
             if serious:
                 raise CommandError("Django 公网部署安全检查未通过")
-        self.stdout.write(self.style.SUCCESS("启动前检查通过"))
+        self.stdout.write("启动前检查通过")
