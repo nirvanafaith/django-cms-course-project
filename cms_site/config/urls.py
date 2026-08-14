@@ -10,7 +10,14 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
 
+from core.admin_views import system_logs
+
 urlpatterns = [
+    path(
+        "admin/system-logs/",
+        admin.site.admin_view(system_logs),
+        name="admin_system_logs",
+    ),
     path("admin/", admin.site.urls),
     path(
         "accounts/login/",

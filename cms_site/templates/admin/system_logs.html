@@ -1,0 +1,65 @@
+{% extends "admin/base_site.html" %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs"><a href="{% url 'admin:index' %}">首页</a> &rsaquo; 系统日志</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  <form method="get" class="module aligned system-log-filters" aria-label="系统日志筛选">
+    <h2>筛选条件</h2>
+    {% for field in form %}
+    <div class="form-row">
+      {{ field.errors }}
+      {{ field.label_tag }}
+      {{ field }}
+    </div>
+    {% endfor %}
+    <div class="submit-row"><input type="submit" value="筛选"></div>
+  </form>
+
+  <div class="module system-log-table-scroll">
+    <table>
+      <caption>最近系统事件</caption>
+      <thead>
+        <tr>
+          <th scope="col">时间</th>
+          <th scope="col">级别</th>
+          <th scope="col">事件</th>
+          <th scope="col">方法</th>
+          <th scope="col">路径</th>
+          <th scope="col">状态</th>
+          <th scope="col">请求 ID</th>
+          <th scope="col">用户 ID</th>
+          <th scope="col">脱敏地址</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for event in events %}
+        <tr>
+          <td>{{ event.timestamp|default:"-" }}</td>
+          <td>{{ event.level|default:"-" }}</td>
+          <td>{{ event.event|default:"-" }}</td>
+          <td>{{ event.method|default:"-" }}</td>
+          <td>{{ event.path|default:"-" }}</td>
+          <td>{{ event.status|default:"-" }}</td>
+          <td>{{ event.request_id|default:"-" }}</td>
+          <td>{{ event.user_id|default:"-" }}</td>
+          <td>{{ event.masked_ip|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9">暂无符合条件的日志</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav class="paginator" aria-label="系统日志分页">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if filter_query %}&amp;{{ filter_query }}{% endif %}">上一页</a>{% endif %}
+    <span>第 {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 页</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if filter_query %}&amp;{{ filter_query }}{% endif %}">下一页</a>{% endif %}
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}
