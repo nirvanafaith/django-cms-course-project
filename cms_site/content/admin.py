@@ -15,6 +15,7 @@ from django.db.models import Count
 
 from core.caching import invalidate_items
 
+from .admin_forms import ItemAdminForm
 from .models import Category, Item
 
 
@@ -45,7 +46,8 @@ class CategoryAdmin(admin.ModelAdmin):
 class ItemAdmin(admin.ModelAdmin):
     """文章管理（FR-ART-01~05）。"""
 
-    list_display = ("title", "category", "publish_time", "is_published")
+    form = ItemAdminForm
+    list_display = ("title", "category", "author", "publish_time", "is_published")
     list_filter = ("is_published", "category", "publish_time")  # 与前台三查询模式对应
     search_fields = ("title",)
     date_hierarchy = "publish_time"
@@ -56,15 +58,21 @@ class ItemAdmin(admin.ModelAdmin):
     @admin.action(description="设为已发布")
     def mark_published(self, request, queryset):
         """用一次批量 UPDATE 发布选中文章，并向管理员反馈影响行数。"""
-        primary_keys = tuple(queryset.values_list("pk", flat=True))
+        items = tuple(queryset)
+        primary_keys = tuple(item.pk for item in items)
         updated = queryset.update(is_published=True)
+        for item in items:
+            self.log_change(request, item, "批量设为已发布")
         transaction.on_commit(lambda: invalidate_items(primary_keys))
         self.message_user(request, f"已将 {updated} 篇文章设为发布")
 
     @admin.action(description="设为草稿")
     def mark_draft(self, request, queryset):
         """用一次批量 UPDATE 撤回文章；撤回后前台 selector 将自动隐藏它们。"""
-        primary_keys = tuple(queryset.values_list("pk", flat=True))
+        items = tuple(queryset)
+        primary_keys = tuple(item.pk for item in items)
         updated = queryset.update(is_published=False)
+        for item in items:
+            self.log_change(request, item, "批量设为草稿")
         transaction.on_commit(lambda: invalidate_items(primary_keys))
         self.message_user(request, f"已将 {updated} 篇文章设为草稿")
