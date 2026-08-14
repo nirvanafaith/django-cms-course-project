@@ -9,7 +9,7 @@
 <div class="results-layout">
     <aside class="filter-panel" aria-label="查询面板"><h2>筛选文章</h2>{% include "content/search_form.html" %}</aside>
     <section class="results-panel" aria-label="文章结果">
-        {% if page_obj %}<ul class="article-list">{% for item in page_obj %}<li class="article-row"><a href="{% url 'content:item_detail' item.pk %}">{{ item.title }}</a><span>{{ item.category.name }} · {{ item.publish_time|date:"Y-m-d H:i" }}</span></li>{% endfor %}</ul>
+        {% if page_obj.object_list %}<ul class="article-list">{% for item in page_obj %}<li class="article-row"><a href="{% url 'content:item_detail' item.pk %}">{{ item.title }}</a><span>{{ item.category.name }} · {{ item.publish_time|date:"Y-m-d H:i" }}</span></li>{% endfor %}</ul>
         {% else %}<div class="empty-state" role="status"><h2>没有找到相关文章</h2><p>尝试放宽条件，或返回全部文章继续浏览。</p><div class="action-cluster">{% if form %}<a class="button button-secondary" href="{% url 'content:search' %}">清除条件</a>{% endif %}<a class="button button-secondary" href="{% url 'content:item_list' %}">查看全部文章</a></div></div>{% endif %}
         {% include "partials/pagination.html" %}
     </section>

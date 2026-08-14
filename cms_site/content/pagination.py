@@ -12,6 +12,12 @@ from django.http import QueryDict
 PAGE_SIZE: Final = 10
 
 
+def page_number(query_params: QueryDict) -> str | None:
+    """读取单值页码参数，重复参数只采用第一个值。"""
+    values = query_params.getlist("page")
+    return values[0] if values else None
+
+
 def paginate(items, page_number: int | str | None) -> Page:
     """按统一页大小返回安全页对象。
 

@@ -6,30 +6,49 @@ selector 和分页辅助函数、组装模板上下文，然后返回 HTTP 响�
 主要变化原因，也更容易在答辩中解释调用链。
 """
 
+from typing import TypedDict
+
 from django.conf import settings
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import render
 
 from core.caching import get_or_load, home_cache_key, item_cache_key
 
-from .forms import SearchForm
+from .forms import BrowseCategoryForm, SearchForm
 from .models import Category, Item
-from .pagination import paginate, query_without_page
+from .pagination import page_number, paginate, query_without_page
 from .selectors import (
     categories_with_item_counts,
-    latest_published_items,
+    homepage_items,
     published_item_by_pk,
     published_items_for_category,
     search_published_items,
 )
 
 
+class HomeContext(TypedDict):
+    """首页模板所需的数据结构。"""
+
+    categories: list[Category]
+    grouped_items: dict[str, list[Item]]
+    latest_items: list[Item]
+    page_title: str
+
+
 def index(request: HttpRequest) -> HttpResponse:
-    """渲染首页：栏目导航和最新八篇已发布文章。"""
-    def load_home_data():
+    """渲染首页：栏目导航、最新内容和按栏目分组的有界内容。"""
+
+    def load_home_data() -> HomeContext:
+        categories = list(categories_with_item_counts())
+        items = list(homepage_items())
+        grouped_items: dict[str, list[Item]] = {category.name: [] for category in categories}
+        for item in items:
+            grouped_items[item.category.name].append(item)
         return {
-            "categories": list(categories_with_item_counts()),
-            "latest_items": list(latest_published_items()),
+            "categories": categories,
+            "grouped_items": grouped_items,
+            "latest_items": items,
+            "page_title": "首页",
         }
 
     context = (
@@ -37,19 +56,19 @@ def index(request: HttpRequest) -> HttpResponse:
         if settings.PUBLIC_PAGE_CACHE_ENABLED
         else load_home_data()
     )
-    context["page_title"] = "首页"
     return render(request, "content/index.html", context)
 
 
 def item_list(request: HttpRequest) -> HttpResponse:
-    """渲染文章列表，可按 GET 参数中的栏目主键筛选并分页。"""
-    category_id = request.GET.get("category")
-    current_category = None
-    if category_id:
-        current_category = Category.objects.filter(pk=category_id).first()
+    """渲染文章列表，并在输入边界验证可选栏目。"""
+    form = BrowseCategoryForm(request.GET)
+    form_is_valid = form.is_valid()
+    current_category = form.cleaned_data["category"] if form_is_valid else None
+    items = published_items_for_category(current_category) if form_is_valid else Item.objects.none()
 
     context = {
-        "page_obj": paginate(published_items_for_category(category_id), request.GET.get("page")),
+        "form": form,
+        "page_obj": paginate(items, page_number(request.GET)),
         "page_title": "文章列表",
         "request_query": query_without_page(request.GET),
         "current_category": current_category,
@@ -95,7 +114,7 @@ def search(request: HttpRequest) -> HttpResponse:
 
     context = {
         "form": form,
-        "page_obj": paginate(items, request.GET.get("page")),
+        "page_obj": paginate(items, page_number(request.GET)),
         "page_title": "搜索",
         "request_query": query_without_page(request.GET),
         "current_category": current_category,
