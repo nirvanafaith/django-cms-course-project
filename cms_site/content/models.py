@@ -11,12 +11,17 @@ BCNF 说明（《技术报告》§4）：两表均为单列主键、属性直接
 表内不存在对非键属性的部分/传递依赖，满足 BCNF。
 """
 
+from __future__ import annotations
+
+from typing import ClassVar
+
 from django.conf import settings
+from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 from django.utils import timezone
 
 
-class ItemQuerySet(models.QuerySet):
+class ItemQuerySet(models.QuerySet["Item"]):
     """文章查询集合，集中保存可被多个页面复用的数据访问规则。
 
     Django QuerySet 采用惰性求值：调用 ``published()`` 只会继续构造 SQL，直到
@@ -33,7 +38,7 @@ class Category(models.Model):
     """栏目（文章的分类目录）。"""
 
     name = models.CharField("栏目名称", max_length=50, unique=True)
-    description = models.TextField("栏目简介", blank=True, null=True)
+    description = models.TextField("栏目简介", blank=True, null=True)  # noqa: DJ001
     created_at = models.DateTimeField("建立时间", auto_now_add=True)
 
     class Meta:
@@ -49,12 +54,8 @@ class Category(models.Model):
 class Item(models.Model):
     """文章（内容条目）。"""
 
-    # as_manager() 把 QuerySet 方法暴露为 Item.objects.published()。
-    # Manager 只改变 Python 查询接口，不增加数据库字段，所以不会产生迁移。
-    objects = ItemQuerySet.as_manager()
-
     title = models.CharField("标题", max_length=200)
-    content = models.TextField("正文", blank=True)  # 正文允许空串（设计取舍 D-06）
+    content = models.TextField("正文")
     category = models.ForeignKey(
         Category,
         verbose_name="所属栏目",
@@ -67,7 +68,7 @@ class Item(models.Model):
         db_index=True,
     )
     updated_at = models.DateTimeField("最后修改时间", auto_now=True)
-    is_published = models.BooleanField("发布状态", default=True)  # 草稿前台不可见（FR-ART-05）
+    is_published = models.BooleanField("发布状态", default=False)
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         verbose_name="作者",
@@ -76,11 +77,28 @@ class Item(models.Model):
         on_delete=models.SET_NULL,  # 作者删除后保留文章（作者可空）
     )
 
+    # Manager 只改变 Python 查询接口，不增加数据库字段。
+    objects = ItemQuerySet.as_manager()
+
     class Meta:
         verbose_name = "文章"
         verbose_name_plural = "文章"
-        # 最新文章优先；列表形式与初始迁移保持一致。
-        ordering = ["-publish_time"]  # noqa: RUF012 - must match the committed migration
+        ordering: ClassVar[list[str]] = ["-publish_time", "-pk"]
+        indexes: ClassVar[list[models.Index]] = [
+            models.Index(
+                fields=["is_published", "-publish_time"],
+                name="item_pub_time_idx",
+            ),
+            models.Index(
+                fields=["category", "is_published", "-publish_time"],
+                name="item_cat_pub_time_idx",
+            ),
+            GinIndex(
+                fields=["title"],
+                name="item_title_trgm_idx",
+                opclasses=["gin_trgm_ops"],
+            ),
+        ]
 
     def __str__(self):
         return self.title
