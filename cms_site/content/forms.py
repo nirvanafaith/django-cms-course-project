@@ -8,6 +8,8 @@ SearchForm：前台查询表单（三种模式 + 组合查询的校验单元）�
 表单级校验：start > end 时拒绝（NFR-01 输入校验）。
 """
 
+from datetime import timedelta
+
 from django import forms
 
 from .models import Category
@@ -60,4 +62,6 @@ class SearchForm(forms.Form):
                 None,
                 "开始日期不能晚于结束日期",
             )
+        if start and end and end - start > timedelta(days=366):
+            self.add_error(None, "查询日期范围不能超过 366 天")
         return cleaned
