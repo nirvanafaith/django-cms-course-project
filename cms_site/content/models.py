@@ -16,8 +16,10 @@ from __future__ import annotations
 from typing import ClassVar
 
 from django.conf import settings
-from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.indexes import GinIndex, OpClass
 from django.db import models
+from django.db.models import Q
+from django.db.models.functions import Upper
 from django.utils import timezone
 
 
@@ -34,6 +36,18 @@ class ItemQuerySet(models.QuerySet["Item"]):
         return self.filter(is_published=True)
 
 
+class ItemManager(models.Manager["Item"]):
+    """暴露带类型信息的文章查询集合入口。"""
+
+    def get_queryset(self) -> ItemQuerySet:
+        """返回文章专用查询集合。"""
+        return ItemQuerySet(self.model, using=self._db)
+
+    def published(self) -> ItemQuerySet:
+        """返回前台允许公开展示的文章。"""
+        return self.get_queryset().published()
+
+
 class Category(models.Model):
     """栏目（文章的分类目录）。"""
 
@@ -48,7 +62,7 @@ class Category(models.Model):
         ordering = ["id"]  # noqa: RUF012 - must match the committed migration
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 
 class Item(models.Model):
@@ -78,7 +92,7 @@ class Item(models.Model):
     )
 
     # Manager 只改变 Python 查询接口，不增加数据库字段。
-    objects = ItemQuerySet.as_manager()
+    objects = ItemManager()
 
     class Meta:
         verbose_name = "文章"
@@ -94,11 +108,11 @@ class Item(models.Model):
                 name="item_cat_pub_time_idx",
             ),
             GinIndex(
-                fields=["title"],
+                OpClass(Upper("title"), name="gin_trgm_ops"),
+                condition=Q(is_published=True),
                 name="item_title_trgm_idx",
-                opclasses=["gin_trgm_ops"],
             ),
         ]
 
     def __str__(self):
-        return self.title
+        return str(self.title)

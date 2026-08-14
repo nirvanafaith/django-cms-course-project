@@ -25,29 +25,32 @@ def categories_with_item_counts() -> QuerySet[Category]:
     return Category.objects.annotate(item_count=Count("items", filter=Q(items__is_published=True)))
 
 
-def latest_published_items(limit: int = 8) -> QuerySet[Item]:
-    """返回指定数量的最新已发布文章，并在同一条 SQL 中读取所属栏目。"""
-    # select_related 使用 SQL JOIN 预加载外键，避免模板逐篇读取栏目时出现 N+1 查询。
-    return Item.objects.published().select_related("category").order_by("-publish_time", "-pk")[
-        :limit
-    ]
+def homepage_items(limit: int = 24) -> QuerySet[Item]:
+    """返回首页所需的有界已发布文章，预加载模板读取的外键。"""
+    return (
+        Item.objects.filter(is_published=True)
+        .select_related("category", "author")
+        .order_by("-publish_time", "-pk")[:limit]
+    )
 
 
-def published_items_for_category(
-    category_id: int | str | None = None,
-) -> QuerySet[Item]:
+def published_items_for_category(category: Category | None = None) -> QuerySet[Item]:
     """返回已发布文章；提供栏目主键时进一步限定所属栏目。"""
-    queryset = Item.objects.published().select_related("category").order_by("-publish_time", "-pk")
-    if category_id:
-        queryset = queryset.filter(category_id=category_id)
+    queryset = (
+        Item.objects.filter(is_published=True)
+        .select_related("category", "author")
+        .order_by("-publish_time", "-pk")
+    )
+    if category is not None:
+        queryset = queryset.filter(category=category)
     return queryset
 
 
 def published_item_by_pk(pk: int) -> Item:
     """按主键返回一篇已发布文章；不存在或为草稿时抛出 ``DoesNotExist``。"""
     return (
-        Item.objects.published()
-        .select_related("category")
+        Item.objects.filter(is_published=True)
+        .select_related("category", "author")
         .order_by("-publish_time", "-pk")
         .get(pk=pk)
     )
@@ -61,7 +64,11 @@ def search_published_items(
     category: Category | None = None,
 ) -> QuerySet[Item]:
     """根据已校验的可选条件，以 AND 语义组合已发布文章查询。"""
-    queryset = Item.objects.published().select_related("category").order_by("-publish_time", "-pk")
+    queryset = (
+        Item.objects.filter(is_published=True)
+        .select_related("category", "author")
+        .order_by("-publish_time", "-pk")
+    )
     if keyword:
         queryset = queryset.filter(title__icontains=keyword)
     if start:
