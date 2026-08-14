@@ -12,6 +12,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from redis.exceptions import RedisError
 
+from .json_logging import mask_ip
 from .logcontext import clear_request_id, set_request_id
 from .throttling import LoginThrottle, RateLimiter
 
@@ -37,11 +38,22 @@ class RequestContextMiddleware:
         try:
             response = self.get_response(request)
             response["X-Request-ID"] = request_id
+            user_id = (
+                request.user.pk
+                if hasattr(request, "user") and request.user.is_authenticated
+                else None
+            )
             request_logger.info(
-                "request.complete path=%s status=%s duration_ms=%.2f",
-                request.path,
-                response.status_code,
-                (time.perf_counter() - started) * 1000,
+                "request.complete",
+                extra={
+                    "request_id": request_id,
+                    "method": request.method,
+                    "path": request.path,
+                    "status": response.status_code,
+                    "duration_ms": round((time.perf_counter() - started) * 1000, 2),
+                    "user_id": user_id,
+                    "masked_ip": mask_ip(client_ip(request)),
+                },
             )
             return response
         finally:
@@ -67,7 +79,10 @@ class PublicRateLimitMiddleware:
                 window=settings.PUBLIC_RATE_WINDOW,
             )
         except (ConnectionError, RedisError):
-            security_logger.warning("rate_limit.degraded path=%s", request.path)
+            security_logger.warning(
+                "rate_limit.degraded",
+                extra={"path": request.path, "masked_ip": mask_ip(client_ip(request))},
+            )
             return self.get_response(request)
 
         if result.allowed:
@@ -94,7 +109,7 @@ class AdminLoginThrottleMiddleware:
         )
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
-        if request.path != "/admin/login/" or request.method != "POST":
+        if request.path not in {"/accounts/login/", "/admin/login/"} or request.method != "POST":
             return self.get_response(request)
 
         username = request.POST.get("username", "")
@@ -102,11 +117,19 @@ class AdminLoginThrottleMiddleware:
         try:
             result = self.throttle.check(username, remote_address)
         except (ConnectionError, RedisError):
+            security_logger.warning(
+                "login_throttle.degraded",
+                extra={"path": request.path, "masked_ip": mask_ip(remote_address)},
+            )
             if settings.DJANGO_MODE == "public":
                 return HttpResponse("Service unavailable", status=503)
             return self.get_response(request)
 
         if not result.allowed:
+            security_logger.warning(
+                "login.blocked",
+                extra={"path": request.path, "masked_ip": mask_ip(remote_address)},
+            )
             response = render(
                 request,
                 "429.html",
@@ -122,6 +145,13 @@ class AdminLoginThrottleMiddleware:
                 self.throttle.clear(username, remote_address)
             elif response.status_code == 200:
                 self.throttle.record_failure(username, remote_address)
+                security_logger.warning(
+                    "login.failed",
+                    extra={"path": request.path, "masked_ip": mask_ip(remote_address)},
+                )
         except (ConnectionError, RedisError):
-            security_logger.warning("admin_login_throttle.degraded")
+            security_logger.warning(
+                "login_throttle.degraded",
+                extra={"path": request.path, "masked_ip": mask_ip(remote_address)},
+            )
         return response

@@ -171,21 +171,32 @@ SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_HTTPONLY = True
 
 
-# 日志（设计 §13）：统一写入标准输出，由运行环境负责采集与轮转。
+# 日志（设计 §13）：UTF-8 JSONL 写入控制台和本地按日轮转文件。
+
+LOG_DIR = Path(os.environ.get("CMS_LOG_DIR", BASE_DIR / "logs"))
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+LOG_FILE = LOG_DIR / "cms.jsonl"
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "simple": {
-            "format": "[{asctime}] {levelname} {name} {message}",
-            "style": "{",
-        },
+        "json": {"()": "core.json_logging.JsonFormatter"},
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "simple",
+            "formatter": "json",
+        },
+        "json_file": {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "formatter": "json",
+            "filename": LOG_FILE,
+            "when": "midnight",
+            "backupCount": 14,
+            "encoding": "utf-8",
+            "utc": False,
+            "delay": True,
         },
     },
     "root": {
@@ -199,12 +210,12 @@ LOGGING = {
             "propagate": False,
         },
         "cms.request": {
-            "handlers": ["console"],
+            "handlers": ["console", "json_file"],
             "level": "INFO",
             "propagate": False,
         },
         "cms.security": {
-            "handlers": ["console"],
+            "handlers": ["console", "json_file"],
             "level": "WARNING",
             "propagate": False,
         },
