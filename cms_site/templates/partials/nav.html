@@ -13,7 +13,17 @@
             <li><a href="{% url 'content:index' %}" {% if url_name == 'index' %}aria-current="page"{% endif %}>首页</a></li>
             <li><a href="{% url 'content:item_list' %}" {% if url_name == 'item_list' or url_name == 'item_detail' %}aria-current="page"{% endif %}>全部文章</a></li>
             <li><a href="{% url 'content:search' %}" {% if url_name == 'search' %}aria-current="page"{% endif %}>搜索</a></li>
-            {% if user.is_staff %}<li><a href="/admin/">后台管理</a></li>{% endif %}
+            {% if user.is_superuser %}<li><a href="{% url 'admin:index' %}">管理后台</a></li>{% endif %}
+            {% if user.is_authenticated %}
+            <li>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="nav-command" type="submit">退出登录</button>
+                </form>
+            </li>
+            {% else %}
+            <li><a href="{% url 'login' %}" {% if url_name == 'login' %}aria-current="page"{% endif %}>登录</a></li>
+            {% endif %}
         </ul>
     </nav>
 </header>

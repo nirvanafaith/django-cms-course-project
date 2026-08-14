@@ -14,6 +14,9 @@ a:hover { color: var(--cms-accent); }
 .nav-menu a { min-height: 2.75rem; display: inline-flex; align-items: center; padding: var(--cms-space-2) var(--cms-space-3); color: var(--cms-text-secondary); text-decoration: none; border-radius: var(--cms-radius-sm); transition: background var(--cms-motion-fast) var(--cms-ease-out), color var(--cms-motion-fast) var(--cms-ease-out); }
 .nav-menu a:hover { background: var(--cms-surface-subtle); color: var(--cms-text); }
 .nav-menu a[aria-current="page"] { background: var(--cms-accent-soft); color: var(--cms-accent-strong); font-weight: 600; }
+.nav-menu form { margin: 0; }
+.nav-command { min-height: 2.75rem; display: inline-flex; align-items: center; padding: var(--cms-space-2) var(--cms-space-3); color: var(--cms-text-secondary); background: transparent; border: 0; border-radius: var(--cms-radius-sm); transition: background var(--cms-motion-fast) var(--cms-ease-out), color var(--cms-motion-fast) var(--cms-ease-out); }
+.nav-command:hover { background: var(--cms-surface-subtle); color: var(--cms-text); }
 .nav-toggle { display: none; margin-left: auto; min-width: 2.75rem; min-height: 2.75rem; border: 1px solid var(--cms-border); border-radius: var(--cms-radius-sm); background: var(--cms-surface); color: var(--cms-text); align-items: center; justify-content: center; }
 .site-main { min-height: calc(100dvh - 9rem); padding-block: var(--cms-space-12) var(--cms-space-16); }
 .site-footer { padding-block: var(--cms-space-6); color: var(--cms-text-secondary); border-top: 1px solid var(--cms-border); background: var(--cms-surface); }
@@ -88,6 +91,7 @@ h1, h2, h3 { color: var(--cms-text); font-weight: 600; letter-spacing: 0; text-w
     .nav-menu { display: none; flex-basis: 100%; flex-direction: column; align-items: stretch; padding-bottom: var(--cms-space-4); }
     .nav-menu.is-open { display: flex; }
     .nav-menu a { width: 100%; }
+    .nav-command { width: 100%; }
     .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .results-layout { grid-template-columns: 1fr; }
     .filter-panel { order: 0; }
