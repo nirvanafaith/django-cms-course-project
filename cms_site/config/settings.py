@@ -21,13 +21,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 # 生产环境必须通过环境变量注入（NFR-02 生产配置要求）。
 DJANGO_MODE = env.get_mode()
-if DJANGO_MODE == env.MODE_PUBLIC:
-    SECRET_KEY = env.require_env("DJANGO_SECRET_KEY")
-else:
-    SECRET_KEY = os.environ.get(
+SECRET_KEY = (
+    env.require_env("DJANGO_SECRET_KEY")
+    if DJANGO_MODE == env.MODE_PUBLIC
+    else os.environ.get(
         "DJANGO_SECRET_KEY",
         "django-insecure-2bc5otkqv&mo8ui&o&&@#sv)x+^o9tbiqqeff1%(3^b=ksxbf*",
     )
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.parse_bool(os.environ.get("DJANGO_DEBUG"), default=True)
@@ -42,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "django.contrib.postgres",
     "django.contrib.staticfiles",
     "content",  # 业务应用：栏目 Category / 文章 Item
     "core",

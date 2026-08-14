@@ -3,10 +3,7 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 from typing import TypedDict
-
-from django.core.exceptions import ImproperlyConfigured
 
 from . import env
 
@@ -14,46 +11,22 @@ from . import env
 class BackendSettings(TypedDict):
     """Django 后端别名映射。"""
 
-    default: dict[str, str | int | bool | Path | dict[str, str | int | bool]]
+    default: dict[str, str | int | bool | dict[str, str | int | bool]]
 
 
-def build_databases(mode: str) -> BackendSettings:
-    """构建数据库设置；正式运行默认 MySQL。"""
-    engine = os.environ.get("DB_ENGINE")
-    if engine is None:
-        engine = "sqlite" if env.is_test_mode() else "mysql"
-
-    if engine == "sqlite":
-        if mode == env.MODE_PUBLIC:
-            raise ImproperlyConfigured("公网模式禁止使用 SQLite，请配置 MySQL")
-        return {
-            "default": {
-                "ENGINE": "django.db.backends.sqlite3",
-                "NAME": Path(os.environ.get("DB_NAME", "db.sqlite3")),
-            }
-        }
-
-    if engine != "mysql":
-        raise ImproperlyConfigured("DB_ENGINE 仅支持 mysql 或 sqlite")
-
-    import pymysql
-
-    pymysql.install_as_MySQLdb()
+def build_databases(_mode: str) -> BackendSettings:
+    """构建唯一受支持的 PostgreSQL 数据库连接。"""
     return {
         "default": {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": env.require_env("DB_NAME"),
-            "USER": env.require_env("DB_USER"),
-            "PASSWORD": env.require_env("DB_PASSWORD"),
-            "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
-            "PORT": os.environ.get("DB_PORT", "3306"),
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env.require_env("POSTGRES_DB"),
+            "USER": env.require_env("POSTGRES_USER"),
+            "PASSWORD": env.require_env("POSTGRES_PASSWORD"),
+            "HOST": os.environ.get("POSTGRES_HOST", "127.0.0.1"),
+            "PORT": os.environ.get("POSTGRES_PORT", "5432"),
             "CONN_MAX_AGE": 60,
             "CONN_HEALTH_CHECKS": True,
-            "OPTIONS": {
-                "charset": "utf8mb4",
-                "connect_timeout": 5,
-                "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
-            },
+            "OPTIONS": {"connect_timeout": 5},
         }
     }
 

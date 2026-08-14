@@ -1,0 +1,24 @@
+[tool.basedpyright]
+include = ["config", "content", "core", "tests"]
+exclude = [".venv", "staticfiles"]
+extraPaths = ["."]
+pythonVersion = "3.12"
+reportMissingTypeStubs = false
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+exclude = [".venv", "staticfiles", "**/migrations/*.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF", "DJ"]
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.coverage.run]
+branch = true
+source = ["config", "content", "core"]
+omit = ["*/migrations/*", "*/tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
