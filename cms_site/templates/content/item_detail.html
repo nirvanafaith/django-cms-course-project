@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
-<nav class="breadcrumbs" aria-label="面包屑"><a href="{% url 'content:index' %}">首页</a><span aria-hidden="true">/</span><a href="{% url 'content:item_list' %}?category={{ item.category.pk }}">{{ item.category.name }}</a><span aria-hidden="true">/</span><span aria-current="page">正文</span></nav>
-<article class="article-page">
-    <header class="article-header"><p class="eyebrow">{{ item.category.name }}</p><h1>{{ item.title }}</h1><div class="article-meta"><time datetime="{{ item.publish_time|date:'c' }}">{{ item.publish_time|date:"Y-m-d H:i" }}</time>{% if item.author %}<span>作者：{{ item.author.username }}</span>{% endif %}</div></header>
-    <div class="article-content">{{ item.content|linebreaksbr }}</div>
-    <footer class="article-footer"><a class="button button-secondary" href="{% url 'content:item_list' %}?category={{ item.category.pk }}">返回该栏目</a></footer>
-</article>
+<div class="bjtu-container page-shell">
+    <nav class="breadcrumbs" aria-label="面包屑"><a href="{% url 'content:index' %}">首页</a><span aria-hidden="true">/</span><a href="{% url 'content:item_list' %}?category={{ item.category.pk }}">{{ item.category.name }}</a><span aria-hidden="true">/</span><span aria-current="page">正文</span></nav>
+    <article class="article-page">
+        <header class="article-header"><p class="eyebrow">{{ item.category.name }}</p><h1>{{ item.title }}</h1><div class="article-meta"><time datetime="{{ item.publish_time|date:'c' }}">{{ item.publish_time|date:"Y-m-d H:i" }}</time>{% if item.author %}<span>作者：{{ item.author.username }}</span>{% endif %}</div></header>
+        <div class="article-content">{{ item.content|linebreaks }}</div>
+        <footer class="article-footer"><a class="button button-secondary" href="{% url 'content:item_list' %}?category={{ item.category.pk }}">返回该栏目</a></footer>
+    </article>
+</div>
 {% endblock %}
