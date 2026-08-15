@@ -1,5 +1,6 @@
 """北交大授权静态素材合同测试。"""
 
+import os
 from pathlib import Path
 from typing import Final
 
@@ -29,7 +30,11 @@ class StaticAssetTests(SimpleTestCase):
     @property
     def provenance_document(self) -> Path:
         """返回素材来源与许可文档路径。"""
-        return Path(settings.BASE_DIR).parent / "docs" / "12_北交大官网素材来源与许可.md"
+        configured_root = os.environ.get("CMS_PROJECT_ROOT")
+        repository_root = (
+            Path(configured_root) if configured_root else Path(settings.BASE_DIR).parent
+        )
+        return repository_root / "docs" / "12_北交大官网素材来源与许可.md"
 
     def test_approved_assets_exist_and_are_not_empty(self) -> None:
         """六个批准素材均存在且包含文件内容。"""
