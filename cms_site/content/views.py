@@ -32,6 +32,10 @@ class HomeContext(TypedDict):
     categories: list[Category]
     grouped_items: dict[str, list[Item]]
     latest_items: list[Item]
+    headline_items: list[Item]
+    teaching_items: list[Item]
+    campus_items: list[Item]
+    notice_items: list[Item]
     page_title: str
 
 
@@ -48,6 +52,10 @@ def index(request: HttpRequest) -> HttpResponse:
             "categories": categories,
             "grouped_items": grouped_items,
             "latest_items": items,
+            "headline_items": grouped_items.get("交大头条", []),
+            "teaching_items": grouped_items.get("教学科研", []),
+            "campus_items": grouped_items.get("校园动态", []),
+            "notice_items": grouped_items.get("通知公告", []),
             "page_title": "首页",
         }
 
@@ -115,7 +123,7 @@ def search(request: HttpRequest) -> HttpResponse:
     context = {
         "form": form,
         "page_obj": paginate(items, page_number(request.GET)),
-        "page_title": "搜索",
+        "page_title": "文章查询",
         "request_query": query_without_page(request.GET),
         "current_category": current_category,
     }
