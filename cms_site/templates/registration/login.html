@@ -1,30 +1,17 @@
 {% extends "base.html" %}
-
+{% block title %}用户登录 · 北京交通大学课程 CMS{% endblock %}
 {% block content %}
-<section class="content-section login-section" aria-labelledby="login-title">
-    <div class="section-heading">
-        <div>
-            <p class="eyebrow">用户登录</p>
-            <h1 id="login-title">登录 CMS 内容门户</h1>
-        </div>
-    </div>
-    {% if form.non_field_errors %}
-    <div class="message message-error" role="alert">{{ form.non_field_errors }}</div>
-    {% endif %}
-    <form method="post" class="search-form">
-        {% csrf_token %}
-        <div class="field-group">
-            <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
-            {{ form.username }}
-            {{ form.username.errors }}
-        </div>
-        <div class="field-group">
-            <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
-            {{ form.password }}
-            {{ form.password.errors }}
-        </div>
-        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-        <button class="button button-primary" type="submit">登录</button>
-    </form>
-</section>
+<div class="bjtu-container page-shell login-layout">
+    <section class="login-section" aria-labelledby="login-title">
+        <header class="page-heading"><p class="eyebrow">ACCOUNT ACCESS</p><h1 id="login-title">用户登录</h1><p>使用管理员创建的课程演示账号登录。</p></header>
+        {% if form.non_field_errors %}<div class="message message-error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        <form method="post" class="login-form">
+            {% csrf_token %}
+            <div class="field-group"><label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>{{ form.username }}{{ form.username.errors }}</div>
+            <div class="field-group"><label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>{{ form.password }}{{ form.password.errors }}</div>
+            {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+            <button class="button button-primary" type="submit">登录</button>
+        </form>
+    </section>
+</div>
 {% endblock %}

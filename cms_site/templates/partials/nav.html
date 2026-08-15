@@ -1,30 +1,43 @@
+{% load static %}
 {% with url_name=request.resolver_match.url_name %}
 <a class="skip-link" href="#main-content">跳到主要内容</a>
 <header class="site-header">
-    <nav class="site-nav container" aria-label="主导航">
-        <a class="site-brand" href="{% url 'content:index' %}">CMS 内容门户</a>
-        <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false"
-                aria-controls="site-nav-menu" aria-label="展开菜单">
-            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M3 6h18M3 12h18M3 18h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-        </button>
-        <ul class="nav-menu" id="site-nav-menu" data-nav-menu>
-            <li><a href="{% url 'content:index' %}" {% if url_name == 'index' %}aria-current="page"{% endif %}>首页</a></li>
-            <li><a href="{% url 'content:item_list' %}" {% if url_name == 'item_list' or url_name == 'item_detail' %}aria-current="page"{% endif %}>全部文章</a></li>
-            <li><a href="{% url 'content:search' %}" {% if url_name == 'search' %}aria-current="page"{% endif %}>搜索</a></li>
-            {% if user.is_superuser %}<li><a href="{% url 'admin:index' %}">管理后台</a></li>{% endif %}
-            {% if user.is_authenticated %}
-            <li>
-                <form method="post" action="{% url 'logout' %}">
-                    {% csrf_token %}
-                    <button class="nav-command" type="submit">退出登录</button>
-                </form>
-            </li>
-            {% else %}
-            <li><a href="{% url 'login' %}" {% if url_name == 'login' %}aria-current="page"{% endif %}>登录</a></li>
-            {% endif %}
-        </ul>
-    </nav>
+    <div class="brand-bar">
+        <div class="bjtu-container brand-inner">
+            <a class="site-brand" href="{% url 'content:index' %}" aria-label="北京交通大学课程 CMS 首页">
+                <img src="{% static 'img/bjtu/logo.png' %}" width="228" height="61" alt="北京交通大学">
+            </a>
+            <p class="prototype-label">课程 CMS 原型<br><span>非官方网站</span></p>
+        </div>
+    </div>
+    <div class="nav-bar">
+        <nav class="site-nav bjtu-container" aria-label="主导航">
+            <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false"
+                    aria-controls="site-nav-menu" aria-label="展开菜单" title="展开菜单">
+                <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M3 6h18M3 12h18M3 18h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <ul class="nav-menu" id="site-nav-menu" data-nav-menu>
+                <li><a href="{% url 'content:index' %}" {% if url_name == 'index' %}aria-current="page"{% endif %}>首页</a></li>
+                <li><a href="{% url 'content:index' %}#special-categories">栏目</a></li>
+                <li><a href="{% url 'content:item_list' %}" {% if url_name == 'item_list' or url_name == 'item_detail' %}aria-current="page"{% endif %}>文章</a></li>
+                <li><a href="{% url 'content:search' %}" {% if url_name == 'search' %}aria-current="page"{% endif %}>查询</a></li>
+            </ul>
+            <ul class="nav-menu account-menu" aria-label="用户导航">
+                {% if user.is_superuser %}<li><a href="{% url 'admin:index' %}">管理后台</a></li>{% endif %}
+                {% if user.is_authenticated %}
+                <li>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button class="nav-command" type="submit">退出登录</button>
+                    </form>
+                </li>
+                {% else %}
+                <li><a href="{% url 'login' %}" {% if url_name == 'login' %}aria-current="page"{% endif %}>登录</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
 </header>
 {% endwith %}
