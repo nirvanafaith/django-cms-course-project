@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Final
 from urllib.parse import urlsplit
 
-HTTPS_URL_PATTERN: Final = re.compile(r"https://[^\s]+")
+HTTPS_URL_PATTERN: Final = re.compile(r"https://[^\s\"']+")
 CPOLAR_SUFFIXES: Final = (".cpolar.top", ".cpolar.cn", ".cpolar.io")
 
 

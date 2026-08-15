@@ -39,10 +39,11 @@ class RuntimeConfigTests(SimpleTestCase):
         self.assertNotIn("DB_ENGINE=sqlite", text)
 
     def test_launchers_use_compose_and_postgresql_variables(self) -> None:
-        """本地入口委托 Compose，公网入口使用统一变量名。"""
+        """本地入口委托 Compose 后台编排并校验配置，公网入口使用统一变量名。"""
         local = (ROOT / "启动系统.bat").read_text(encoding="utf-8")
         public = (ROOT / "启动公网系统.bat").read_text(encoding="utf-8")
 
-        self.assertIn("docker compose up --build --wait", local)
+        self.assertIn("docker compose config --quiet", local)
+        self.assertIn("docker compose up -d --build --wait --remove-orphans web", local)
         self.assertIn("POSTGRES_DB", public)
         self.assertNotIn("DB_NAME", public)
