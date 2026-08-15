@@ -38,7 +38,7 @@ globals().update(security.build_security_settings(DJANGO_MODE))
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    "core.admin_site.CmsAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",

@@ -9,6 +9,7 @@ class AuthenticationFlowTests(TestCase):
     """验证匿名、普通用户和管理员的可见入口。"""
 
     normal_user: User
+    staff_only_user: User
     superuser: User
 
     @classmethod
@@ -17,6 +18,11 @@ class AuthenticationFlowTests(TestCase):
         cls.normal_user = User.objects.create_user(
             username="student",
             password="test-password-1",
+        )
+        cls.staff_only_user = User.objects.create_user(
+            username="staff-only",
+            password="test-password-staff",
+            is_staff=True,
         )
         cls.superuser = User.objects.create_superuser(
             username="cms-admin",
@@ -63,6 +69,14 @@ class AuthenticationFlowTests(TestCase):
     def test_normal_user_cannot_enter_admin(self) -> None:
         """隐藏入口之外，Admin 服务端仍拒绝普通用户。"""
         self.client.force_login(self.normal_user)
+
+        response = self.client.get(reverse("admin:index"))
+
+        self.assertRedirects(response, f"{reverse('admin:login')}?next={reverse('admin:index')}")
+
+    def test_staff_only_user_cannot_enter_admin(self) -> None:
+        """不完整的 staff 标志不能绕过仅超级用户可访问的后台规则。"""
+        self.client.force_login(self.staff_only_user)
 
         response = self.client.get(reverse("admin:index"))
 
