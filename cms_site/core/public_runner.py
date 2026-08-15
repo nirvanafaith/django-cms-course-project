@@ -9,7 +9,7 @@ import threading
 import time
 from collections.abc import Callable, Mapping
 from pathlib import Path
-from typing import Final, TextIO
+from typing import IO, Final
 
 from .cpolar import PublicTunnel, TunnelAddressError, extract_https_tunnel
 
@@ -49,7 +49,7 @@ def wait_for_tunnel(
     timeout: int = TUNNEL_TIMEOUT_SECONDS,
 ) -> PublicTunnel:
     """读取 cpolar 日志直到出现合法 HTTPS 地址或进程失败。"""
-    output: TextIO | None = process.stdout
+    output: IO[str] | None = process.stdout
     if output is None:
         raise TunnelAddressError("cpolar 未提供可读取的日志输出")
 
@@ -136,6 +136,7 @@ class PublicRunner:
             server_process = subprocess.Popen(
                 [self.python_executable, "manage.py", "serve_waitress"],
                 env=environment,
+                text=True,
             )
             return server_process.wait()
         finally:
