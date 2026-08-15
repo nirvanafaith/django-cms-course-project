@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-setlocal
+setlocal EnableExtensions
 
 title CMS Public cpolar Mode
 set "PROJECT_ROOT=%~dp0"
@@ -19,24 +19,31 @@ if not exist "%CPOLAR_EXE%" (
     exit /b 1
 )
 
-if not defined DJANGO_SECRET_KEY (
-    echo [ERROR] DJANGO_SECRET_KEY is required for public mode.
-    exit /b 1
-)
-if not defined POSTGRES_DB (
-    echo [ERROR] POSTGRES_DB, POSTGRES_USER and POSTGRES_PASSWORD are required.
-    exit /b 1
-)
-if not defined REDIS_URL (
-    echo [ERROR] REDIS_URL is required for public mode.
-    exit /b 1
+for %%V in (
+    DJANGO_SECRET_KEY
+    POSTGRES_DB
+    POSTGRES_USER
+    POSTGRES_PASSWORD
+    POSTGRES_HOST
+    POSTGRES_PORT
+    REDIS_URL
+    DEMO_USER_PASSWORD
+    DEMO_ADMIN_PASSWORD
+) do (
+    if not defined %%V (
+        echo [ERROR] %%V is required for public mode.
+        exit /b 1
+    )
 )
 
 cd /d "%CMS_DIR%"
 if errorlevel 1 exit /b 1
 
-echo Starting cpolar HTTPS tunnel and Waitress...
+echo [INFO] Running public deployment checks, then starting cpolar HTTPS tunnel and Waitress...
 "%PYTHON_EXE%" manage.py serve_public
-if errorlevel 1 exit /b 1
+if errorlevel 1 (
+    echo [ERROR] Public CMS startup failed.
+    exit /b 1
+)
 
 exit /b 0
