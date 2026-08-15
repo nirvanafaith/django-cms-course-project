@@ -1,0 +1,272 @@
+.hero-carousel {
+    position: relative;
+    max-width: 120rem;
+    margin-inline: auto;
+    overflow: hidden;
+    border-bottom: 6px solid var(--bjtu-blue);
+    background: var(--bjtu-blue-dark);
+}
+
+.carousel-viewport {
+    position: relative;
+    aspect-ratio: 2480 / 801;
+}
+
+.carousel-slide {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--bjtu-motion-carousel) var(--bjtu-ease-out);
+}
+
+.carousel-slide.is-active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.carousel-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.carousel-controls {
+    position: absolute;
+    right: var(--bjtu-space-5);
+    bottom: var(--bjtu-space-4);
+    display: flex;
+    gap: var(--bjtu-space-2);
+}
+
+.carousel-button {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bjtu-surface);
+    background: var(--bjtu-overlay);
+    border: 1px solid var(--bjtu-surface);
+    border-radius: var(--bjtu-radius-sm);
+    transition: transform var(--bjtu-motion-fast) var(--bjtu-ease-out), background var(--bjtu-motion-fast) var(--bjtu-ease-out);
+}
+
+.carousel-button:hover {
+    background: var(--bjtu-blue);
+}
+
+.carousel-button:active {
+    transform: translateY(1px);
+}
+
+.home-section {
+    padding-block: var(--bjtu-space-10) var(--bjtu-space-15);
+}
+
+.headline-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr);
+    gap: var(--bjtu-space-8);
+}
+
+.headline-feature {
+    padding-right: var(--bjtu-space-8);
+    border-right: 1px solid var(--bjtu-border);
+}
+
+.headline-date {
+    margin: 0 0 var(--bjtu-space-2);
+    color: var(--bjtu-green);
+    font-weight: 700;
+}
+
+.headline-feature h3 {
+    margin: 0;
+    font-size: var(--bjtu-text-xl);
+    line-height: 1.5;
+}
+
+.headline-feature h3 a,
+.headline-list a,
+.compact-news-list a,
+.notice-list a {
+    color: var(--bjtu-text);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.headline-feature h3 a:hover,
+.headline-list a:hover,
+.compact-news-list a:hover,
+.notice-list a:hover {
+    color: var(--bjtu-blue);
+}
+
+.headline-feature > p:last-child {
+    margin: var(--bjtu-space-3) 0 0;
+    color: var(--bjtu-muted);
+}
+
+.headline-list,
+.compact-news-list,
+.notice-list,
+.category-links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.headline-list li,
+.compact-news-list li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--bjtu-space-4);
+    padding: var(--bjtu-space-3) 0;
+    border-bottom: 1px dashed var(--bjtu-border);
+}
+
+.headline-list time,
+.compact-news-list time {
+    color: var(--bjtu-subtle);
+    font-family: Arial, Helvetica, sans-serif;
+    white-space: nowrap;
+}
+
+.home-band {
+    padding-block: var(--bjtu-space-10) var(--bjtu-space-12);
+    background: var(--bjtu-page);
+}
+
+.dual-section {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--bjtu-space-12);
+}
+
+.notice-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--bjtu-space-3) var(--bjtu-space-8);
+}
+
+.notice-list li {
+    min-height: 4.5rem;
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 1fr);
+    align-items: center;
+    gap: var(--bjtu-space-4);
+    padding-block: var(--bjtu-space-3);
+    border-bottom: 1px solid var(--bjtu-border);
+}
+
+.notice-list time {
+    padding-right: var(--bjtu-space-3);
+    border-right: 1px solid var(--bjtu-border);
+    color: var(--bjtu-green);
+    text-align: center;
+}
+
+.notice-list time strong,
+.notice-list time span {
+    display: block;
+}
+
+.notice-list time strong {
+    font-size: var(--bjtu-text-xl);
+    line-height: 1.2;
+}
+
+.gallery-band {
+    padding-block: var(--bjtu-space-8) var(--bjtu-space-12);
+    background: var(--bjtu-blue);
+}
+
+.gallery-heading {
+    justify-content: center;
+    margin-bottom: var(--bjtu-space-6);
+    color: var(--bjtu-surface);
+}
+
+.gallery-heading h2,
+.gallery-heading h2 span {
+    color: var(--bjtu-surface);
+}
+
+.campus-gallery {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--bjtu-space-4);
+}
+
+.campus-gallery figure {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    border: 5px solid var(--bjtu-surface);
+}
+
+.campus-gallery img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--bjtu-motion-base) var(--bjtu-ease-out);
+}
+
+.campus-gallery figure:hover img {
+    transform: scale(1.025);
+}
+
+.campus-gallery figcaption {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: var(--bjtu-space-2) var(--bjtu-space-3);
+    background: var(--bjtu-overlay);
+    color: var(--bjtu-surface);
+    text-align: center;
+}
+
+.category-band {
+    padding-block: var(--bjtu-space-8) var(--bjtu-space-10);
+    background: var(--bjtu-blue-soft);
+}
+
+.category-links {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-top: 1px solid var(--bjtu-blue);
+    border-left: 1px solid var(--bjtu-blue);
+}
+
+.category-links a {
+    min-height: 4.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--bjtu-space-2);
+    padding: var(--bjtu-space-4);
+    color: var(--bjtu-text);
+    background: var(--bjtu-surface);
+    border-right: 1px solid var(--bjtu-blue);
+    border-bottom: 1px solid var(--bjtu-blue);
+    font-weight: 700;
+    text-decoration: none;
+    transition: color var(--bjtu-motion-fast) var(--bjtu-ease-out), background var(--bjtu-motion-fast) var(--bjtu-ease-out);
+}
+
+.category-links a:hover {
+    background: var(--bjtu-blue);
+    color: var(--bjtu-surface);
+}
+
+.category-links small {
+    font-weight: 400;
+    white-space: nowrap;
+}
