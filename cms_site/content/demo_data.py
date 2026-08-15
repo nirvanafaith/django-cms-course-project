@@ -32,10 +32,10 @@ class ArticleSpec:
         """按标题和栏目生成三段原创正文。"""
         category = CATEGORY_BY_NAME[self.category_name]
         return (
-            f'围绕“{self.title}”，学校结合近期工作安排组织了专题推进。'
-            f'本项内容归入“{category.name}”栏目，重点回应师生关心的{category.focus}，'
+            f"围绕“{self.title}”，学校结合近期工作安排组织了专题推进。"
+            f"本项内容归入“{category.name}”栏目，重点回应师生关心的{category.focus}，"
             "相关信息均为课程 CMS 演示所用的原创素材。\n\n"
-            f'工作组已明确时间节点、参与范围和协同方式，并将关键成果纳入{category.description}。'
+            f"工作组已明确时间节点、参与范围和协同方式，并将关键成果纳入{category.description}。"
             "各单位依照公开流程提交材料，阶段结果由责任部门统一整理，确保安排可查询、"
             "进度可跟踪、结果可复核。\n\n"
             "后续进展将在本栏目持续更新。师生如需了解具体事项，可通过校内综合服务平台"

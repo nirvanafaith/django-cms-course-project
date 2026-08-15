@@ -103,18 +103,14 @@ class ContentAdminTests(TestCase):
 
     def test_item_form_rejects_whitespace_title(self) -> None:
         """纯空白标题不能进入数据库。"""
-        form = ItemAdminForm(
-            data={"title": "   ", "content": "正文", "category": self.category.pk}
-        )
+        form = ItemAdminForm(data={"title": "   ", "content": "正文", "category": self.category.pk})
 
         self.assertFalse(form.is_valid())
         self.assertIn("title", form.errors)
 
     def test_item_form_rejects_whitespace_content(self) -> None:
         """纯空白正文不能进入数据库。"""
-        form = ItemAdminForm(
-            data={"title": "标题", "content": "   ", "category": self.category.pk}
-        )
+        form = ItemAdminForm(data={"title": "标题", "content": "   ", "category": self.category.pk})
 
         self.assertFalse(form.is_valid())
         self.assertIn("content", form.errors)
@@ -128,8 +124,7 @@ class ContentAdminTests(TestCase):
 
         with self.assertNumQueries(1):
             counts = [
-                category_admin.article_count(item)
-                for item in category_admin.get_queryset(request)
+                category_admin.article_count(item) for item in category_admin.get_queryset(request)
             ]
 
         self.assertEqual(counts, [1])

@@ -31,9 +31,7 @@ class LogReaderTests(SimpleTestCase):
                     {"timestamp": "2026-08-13T10:00:00+00:00", "request_id": "2"},
                 ],
             )
-            (log_dir / "cms.jsonl.2026-08-14").write_text(
-                "malformed\n", encoding="utf-8"
-            )
+            (log_dir / "cms.jsonl.2026-08-14").write_text("malformed\n", encoding="utf-8")
             write_events(
                 log_dir / "cms.jsonl",
                 [
@@ -54,9 +52,7 @@ class LogReaderTests(SimpleTestCase):
                 log_dir / "cms.jsonl",
                 [
                     {
-                        "timestamp": (
-                            f"2026-08-14T10:{index // 60:02}:{index % 60:02}+00:00"
-                        ),
+                        "timestamp": (f"2026-08-14T10:{index // 60:02}:{index % 60:02}+00:00"),
                         "status": index,
                     }
                     for index in range(5002)

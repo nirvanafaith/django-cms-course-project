@@ -53,9 +53,7 @@ def parse_int(name: str, value: str | None, setting: IntegerSetting) -> int:
     except ValueError as error:
         raise ConfigError(f"{name} 必须是整数") from error
     if not setting.minimum <= parsed <= setting.maximum:
-        raise ConfigError(
-            f"{name} 必须介于 {setting.minimum} 和 {setting.maximum} 之间"
-        )
+        raise ConfigError(f"{name} 必须介于 {setting.minimum} 和 {setting.maximum} 之间")
     return parsed
 
 

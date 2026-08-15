@@ -15,9 +15,7 @@ class VerifyPostgresTests(SimpleTestCase):
     def test_accepts_postgresql_18(self, connection: MagicMock) -> None:
         """PostgreSQL 18 返回成功并输出服务端版本。"""
         connection.vendor = "postgresql"
-        connection.cursor.return_value.__enter__.return_value.fetchone.return_value = (
-            "180006",
-        )
+        connection.cursor.return_value.__enter__.return_value.fetchone.return_value = ("180006",)
         stdout = StringIO()
 
         call_command("verify_postgres", stdout=stdout)
@@ -28,9 +26,7 @@ class VerifyPostgresTests(SimpleTestCase):
     def test_rejects_postgresql_17(self, connection: MagicMock) -> None:
         """低于 18 的 PostgreSQL 服务端被拒绝。"""
         connection.vendor = "postgresql"
-        connection.cursor.return_value.__enter__.return_value.fetchone.return_value = (
-            "170010",
-        )
+        connection.cursor.return_value.__enter__.return_value.fetchone.return_value = ("170010",)
 
         with self.assertRaises(CommandError):
             call_command("verify_postgres")

@@ -56,9 +56,7 @@ class CmsUserChangeForm(UserChangeForm):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         if self.instance.pk:
-            self.fields["role"].initial = (
-                ROLE_ADMIN if self.instance.is_superuser else ROLE_NORMAL
-            )
+            self.fields["role"].initial = ROLE_ADMIN if self.instance.is_superuser else ROLE_NORMAL
 
     def save(self, commit: bool = True) -> User:
         """保存用户并同步角色标志。"""
