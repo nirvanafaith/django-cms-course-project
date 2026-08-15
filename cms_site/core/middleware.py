@@ -40,7 +40,9 @@ class RequestContextMiddleware:
             response["X-Request-ID"] = request_id
             user_id = (
                 request.user.pk
-                if hasattr(request, "user") and request.user.is_authenticated
+                if response.status_code < 500
+                and hasattr(request, "user")
+                and request.user.is_authenticated
                 else None
             )
             request_logger.info(

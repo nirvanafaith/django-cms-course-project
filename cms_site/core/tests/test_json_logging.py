@@ -6,8 +6,10 @@ from unittest.mock import MagicMock
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.db import OperationalError
 from django.http import HttpResponse
 from django.test import RequestFactory, SimpleTestCase
+from django.utils.functional import SimpleLazyObject
 
 from core.json_logging import JsonFormatter, mask_ip
 from core.middleware import AdminLoginThrottleMiddleware, RequestContextMiddleware
@@ -111,6 +113,22 @@ class RequestLoggingTests(SimpleTestCase):
         self.assertEqual(record.__dict__["request_id"], response["X-Request-ID"])
         self.assertFalse(hasattr(record, "query_string"))
 
+    def test_error_response_avoids_resolving_unavailable_session_user(self) -> None:
+        """Given 503 响应，When 会话数据库不可用，Then 日志中间件保留该响应。"""
+        request = self.factory.get("/health/ready/", REMOTE_ADDR="203.0.113.42")
+        request.__dict__["user"] = SimpleLazyObject(
+            MagicMock(side_effect=OperationalError("db unavailable"))
+        )
+        middleware = RequestContextMiddleware(
+            lambda _request: HttpResponse("unavailable", status=503)
+        )
+
+        with self.assertLogs("cms.request", level="INFO") as captured:
+            response = middleware(request)
+
+        self.assertEqual(response.status_code, 503)
+        self.assertIsNone(captured.records[0].__dict__["user_id"])
+
 
 class LoginSecurityLoggingTests(SimpleTestCase):
     """验证两个登录入口共享限流与安全事件。"""
@@ -133,9 +151,7 @@ class LoginSecurityLoggingTests(SimpleTestCase):
             response = middleware(request)
 
         self.assertEqual(response.status_code, 200)
-        middleware.throttle.record_failure.assert_called_once_with(
-            "reader", "203.0.113.42"
-        )
+        middleware.throttle.record_failure.assert_called_once_with("reader", "203.0.113.42")
         record = captured.records[0]
         self.assertEqual(record.getMessage(), "login.failed")
         self.assertEqual(record.__dict__["path"], "/accounts/login/")
@@ -168,9 +184,7 @@ class LoggingSettingsTests(SimpleTestCase):
         """日志文件按本地午夜轮转并保留十四份。"""
         handler = settings.LOGGING["handlers"]["json_file"]
 
-        self.assertEqual(
-            handler["class"], "logging.handlers.TimedRotatingFileHandler"
-        )
+        self.assertEqual(handler["class"], "logging.handlers.TimedRotatingFileHandler")
         self.assertEqual(handler["filename"], settings.LOG_FILE)
         self.assertEqual(handler["when"], "midnight")
         self.assertEqual(handler["backupCount"], 14)
