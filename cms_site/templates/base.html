@@ -4,22 +4,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="浏览和查询校园栏目与已发布文章。">
+    <meta name="description" content="北京交通大学课程 CMS：浏览栏目、已发布文章与校内通知。">
     <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
-    <title>{% block title %}{{ page_title }} · CMS 原型系统{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>{% block title %}{{ page_title }} · 北京交通大学课程 CMS{% endblock %}</title>
+    {% block head_extra %}{% endblock %}
     <link href="{% static 'css/tokens.css' %}" rel="stylesheet">
     <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+    <link href="{% static 'css/chrome.css' %}" rel="stylesheet">
+    <link href="{% static 'css/home.css' %}" rel="stylesheet">
+    <link href="{% static 'css/content.css' %}" rel="stylesheet">
+    <link href="{% static 'css/responsive.css' %}" rel="stylesheet">
 </head>
 <body class="cms-body">
     {% include "partials/nav.html" %}
-    <main id="main-content" class="site-main container">
-        {% include "partials/messages.html" %}
+    <main id="main-content" class="{% block main_class %}site-main{% endblock %}">
+        {% if messages %}
+        <div class="bjtu-container messages-region">
+            {% include "partials/messages.html" %}
+        </div>
+        {% endif %}
         {% block content %}{% endblock %}
     </main>
     <footer class="site-footer">
-        <div class="container">
-            <small>基于 Python/Django 的 CMS 原型系统 · CITEL_T_001 课程作业</small>
+        <div class="bjtu-container footer-layout">
+            <div>
+                <strong>北京交通大学课程 CMS</strong>
+                <p>北京市海淀区上园村3号北京交通大学</p>
+                <p>邮编：100044</p>
+            </div>
+            <div class="footer-disclosure">
+                <p>课程 CMS 原型，非官方网站</p>
+                <details id="asset-source-note">
+                    <summary>北交大官网素材来源与许可</summary>
+                    <p>授权素材已下载到项目本地；完整来源、尺寸与 SHA-256 见 <code>docs/12_北交大官网素材来源与许可.md</code>。</p>
+                </details>
+            </div>
         </div>
     </footer>
     <script src="{% static 'js/main.js' %}" defer></script>
