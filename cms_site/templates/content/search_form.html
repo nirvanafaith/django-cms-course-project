@@ -1,12 +1,10 @@
 {% if form %}
-<form action="{% if request.resolver_match.url_name == 'search' %}{% url 'content:search' %}{% else %}{% url 'content:item_list' %}{% endif %}" method="get" class="search-form" novalidate>
+<form action="{% url 'content:search' %}" method="get" class="search-form" novalidate>
     {% if form.non_field_errors %}<div class="form-error-summary" role="alert">{{ form.non_field_errors }}</div>{% endif %}
-    {% if request.resolver_match.url_name == 'search' %}
     <div class="field-group"><label for="id_q">题目关键词</label>{{ form.q }}{% if form.q.errors %}<div class="field-errors" role="alert">{{ form.q.errors }}</div>{% endif %}</div>
     <div class="field-group"><label for="id_start">起始日期</label>{{ form.start }}<p id="id_start_helptext" class="field-help">{{ form.start.help_text }}</p>{% if form.start.errors %}<div class="field-errors" role="alert">{{ form.start.errors }}</div>{% endif %}</div>
     <div class="field-group"><label for="id_end">结束日期</label>{{ form.end }}<p id="id_end_helptext" class="field-help">{{ form.end.help_text }}</p>{% if form.end.errors %}<div class="field-errors" role="alert">{{ form.end.errors }}</div>{% endif %}</div>
-    {% endif %}
     <div class="field-group"><label for="id_category">栏目</label>{{ form.category }}{% if form.category.errors %}<div class="field-errors" role="alert">{{ form.category.errors }}</div>{% endif %}</div>
-    <div class="form-actions"><button class="button button-primary" type="submit">{% if request.resolver_match.url_name == 'search' %}查询{% else %}筛选{% endif %}</button><a class="button button-secondary" href="{% if request.resolver_match.url_name == 'search' %}{% url 'content:search' %}{% else %}{% url 'content:item_list' %}{% endif %}">清除条件</a></div>
+    <div class="form-actions"><button class="button button-primary" type="submit">查询</button><a class="button button-secondary" href="{% url 'content:search' %}">清除条件</a></div>
 </form>
 {% endif %}

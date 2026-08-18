@@ -14,22 +14,15 @@ from django.shortcuts import render
 
 from core.caching import get_or_load, home_cache_key, item_cache_key
 
-from .forms import BrowseCategoryForm, SearchForm
-from .models import Category, Item
+from .forms import SearchForm
+from .models import Item
 from .pagination import page_number, paginate, query_without_page
-from .selectors import (
-    categories_with_item_counts,
-    homepage_items,
-    published_item_by_pk,
-    published_items_for_category,
-    search_published_items,
-)
+from .selectors import homepage_items, published_item_by_pk, search_published_items
 
 
 class HomeContext(TypedDict):
     """首页模板所需的数据结构。"""
 
-    categories: list[Category]
     grouped_items: dict[str, list[Item]]
     latest_items: list[Item]
     headline_items: list[Item]
@@ -43,13 +36,11 @@ def index(request: HttpRequest) -> HttpResponse:
     """渲染首页：栏目导航、最新内容和按栏目分组的有界内容。"""
 
     def load_home_data() -> HomeContext:
-        categories = list(categories_with_item_counts())
         items = list(homepage_items())
-        grouped_items: dict[str, list[Item]] = {category.name: [] for category in categories}
+        grouped_items: dict[str, list[Item]] = {}
         for item in items:
-            grouped_items[item.category.name].append(item)
+            grouped_items.setdefault(item.category.name, []).append(item)
         return {
-            "categories": categories,
             "grouped_items": grouped_items,
             "latest_items": items,
             "headline_items": grouped_items.get("交大头条", []),
@@ -65,23 +56,6 @@ def index(request: HttpRequest) -> HttpResponse:
         else load_home_data()
     )
     return render(request, "content/index.html", context)
-
-
-def item_list(request: HttpRequest) -> HttpResponse:
-    """渲染文章列表，并在输入边界验证可选栏目。"""
-    form = BrowseCategoryForm(request.GET)
-    form_is_valid = form.is_valid()
-    current_category = form.cleaned_data["category"] if form_is_valid else None
-    items = published_items_for_category(current_category) if form_is_valid else Item.objects.none()
-
-    context = {
-        "form": form,
-        "page_obj": paginate(items, page_number(request.GET)),
-        "page_title": "文章列表",
-        "request_query": query_without_page(request.GET),
-        "current_category": current_category,
-    }
-    return render(request, "content/item_list.html", context)
 
 
 def item_detail(request: HttpRequest, pk: int) -> HttpResponse:

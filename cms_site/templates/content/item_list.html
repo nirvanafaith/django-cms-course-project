@@ -9,7 +9,7 @@
         {% if form %}<div class="condition-summary" aria-label="当前查询条件">{% if form.is_valid %}{% if form.cleaned_data.q %}<span>题目关键词：{{ form.cleaned_data.q }}</span>{% endif %}{% if form.cleaned_data.start %}<span>从 {{ form.cleaned_data.start }} 起</span>{% endif %}{% if form.cleaned_data.end %}<span>至 {{ form.cleaned_data.end }} 止</span>{% endif %}{% if current_category %}<span>栏目：{{ current_category.name }}</span>{% endif %}{% if not form.cleaned_data.q and not form.cleaned_data.start and not form.cleaned_data.end and not current_category %}<span>无条件，显示全部已发布文章</span>{% endif %}{% else %}<span>查询条件有误，请修正后重新查询。</span>{% endif %}</div>{% endif %}
     </header>
     <div class="results-layout">
-        <aside class="filter-panel" aria-label="查询面板"><h2>{% if request.resolver_match.url_name == 'search' %}组合查询{% else %}栏目筛选{% endif %}</h2>{% include "content/search_form.html" %}</aside>
+        <aside class="filter-panel" aria-label="查询面板"><h2>文章查询</h2>{% include "content/search_form.html" %}</aside>
         <section class="results-panel" aria-label="文章结果">
             {% if page_obj.object_list %}
             <ul class="article-list article-grid">
@@ -21,7 +21,7 @@
                 {% endfor %}
             </ul>
             {% else %}
-            <div class="empty-state" role="status"><h2>没有找到相关文章</h2><p>尝试放宽条件，或返回全部文章继续浏览。</p><div class="action-cluster">{% if form %}<a class="button button-secondary" href="{% url 'content:search' %}">清除条件</a>{% endif %}<a class="button button-secondary" href="{% url 'content:item_list' %}">查看全部文章</a></div></div>
+            <div class="empty-state" role="status"><h2>没有找到相关文章</h2><p>尝试放宽条件，或查看全部已发布文章。</p><div class="action-cluster"><a class="button button-secondary" href="{% url 'content:search' %}">清除条件</a></div></div>
             {% endif %}
             {% include "partials/pagination.html" %}
         </section>
