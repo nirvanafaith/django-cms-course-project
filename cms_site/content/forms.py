@@ -15,17 +15,6 @@ from django import forms
 from .models import Category
 
 
-class BrowseCategoryForm(forms.Form):
-    """文章列表的栏目筛选输入边界。"""
-
-    category = forms.ModelChoiceField(
-        label="栏目",
-        required=False,
-        queryset=Category.objects.all(),
-        empty_label="全部栏目",
-    )
-
-
 class SearchForm(forms.Form):
     """前台查询表单：按题目/时间/栏目三种模式组合（FR-SRCH-01~04）。"""
 
@@ -54,6 +43,7 @@ class SearchForm(forms.Form):
         required=False,
         queryset=Category.objects.all(),
         empty_label="全部栏目",
+        to_field_name="name",
     )
 
     def clean_q(self):

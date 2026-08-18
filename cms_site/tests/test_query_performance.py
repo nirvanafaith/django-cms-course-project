@@ -7,7 +7,7 @@ from django.db import connection
 from django.test import TestCase, tag
 
 from content.models import Category, Item
-from content.selectors import published_items_for_category, search_published_items
+from content.selectors import search_published_items
 
 SHANGHAI = ZoneInfo("Asia/Shanghai")
 
@@ -43,7 +43,7 @@ class PostgreSQLQueryPerformanceTests(TestCase):
 
     def test_category_time_query_exposes_composite_index(self) -> None:
         """栏目公开列表的执行计划包含复合 B-tree 索引名称。"""
-        plan = published_items_for_category(self.category).explain(analyze=False)
+        plan = search_published_items(category=self.category).explain(analyze=False)
 
         self.assertIn("item_cat_pub_time_idx", plan)
 

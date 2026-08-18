@@ -48,14 +48,24 @@ class PublicContentTests(TestCase):
             is_published=True,
         )
 
-    def test_item_list_invalid_category_renders_recovery_state(self) -> None:
+    def test_search_invalid_category_renders_recovery_state(self) -> None:
         """非法栏目值显示空结果和恢复入口，而不是回退为全部文章。"""
-        response = self.client.get(reverse("content:item_list"), {"category": "999999"})
+        response = self.client.get(reverse("content:search"), {"category": "不存在的栏目"})
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "选择一个有效的选项")
         self.assertContains(response, "没有找到相关文章")
         self.assertNotContains(response, self.early.title)
+
+    def test_search_column_name_selects_the_category_and_filters_results(self) -> None:
+        """导航使用栏目名称时查询页选中该栏目且只显示其公开文章。"""
+        response = self.client.get(reverse("content:search"), {"category": self.news.name})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["form"].cleaned_data["category"], self.news)
+        self.assertContains(response, 'value="交大头条" selected')
+        self.assertContains(response, self.early.title)
+        self.assertNotContains(response, self.equal_second.title)
 
     def test_search_end_date_includes_the_entire_shanghai_day(self) -> None:
         """结束日期按上海自然日闭区间解释。"""
@@ -81,7 +91,6 @@ class PublicContentTests(TestCase):
         """首页、列表、搜索和详情都不暴露草稿。"""
         for url in (
             reverse("content:index"),
-            reverse("content:item_list"),
             reverse("content:search"),
         ):
             with self.subTest(url=url):
@@ -92,9 +101,9 @@ class PublicContentTests(TestCase):
             404,
         )
 
-    def test_equal_publish_times_use_primary_key_as_stable_tiebreaker(self) -> None:
+    def test_search_uses_primary_key_as_stable_tiebreaker_for_equal_publish_times(self) -> None:
         """相同发表时间的分页排序以主键倒序稳定收束。"""
-        response = self.client.get(reverse("content:item_list"))
+        response = self.client.get(reverse("content:search"))
         body = response.content.decode()
 
         self.assertLess(body.index(self.equal_second.title), body.index(self.equal_first.title))
@@ -137,17 +146,17 @@ class PublicQueryBudgetTests(TestCase):
             is_published=False,
         )
 
-    def test_homepage_stays_within_two_queries(self) -> None:
-        """首页分类聚合和文章列表在固定预算内完成。"""
-        with self.assertNumQueries(2):
+    def test_homepage_stays_within_one_query(self) -> None:
+        """首页文章分组由一次预加载查询完成。"""
+        with self.assertNumQueries(1):
             response = self.client.get(reverse("content:index"))
 
         self.assertEqual(response.status_code, 200)
 
-    def test_list_stays_within_three_queries(self) -> None:
-        """文章列表只执行计数、栏目选项和当前页查询。"""
+    def test_search_without_filters_stays_within_three_queries(self) -> None:
+        """无条件文章查询只执行栏目选项、计数和当前页查询。"""
         with self.assertNumQueries(3):
-            response = self.client.get(reverse("content:item_list"))
+            response = self.client.get(reverse("content:search"))
 
         self.assertEqual(response.status_code, 200)
 

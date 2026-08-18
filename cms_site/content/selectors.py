@@ -7,7 +7,7 @@ Selector（查询器）只负责使用 Django ORM 读取数据，不读取 ``Htt
 
 from datetime import date, datetime, time, timedelta
 
-from django.db.models import Count, Q, QuerySet
+from django.db.models import QuerySet
 from django.utils import timezone
 
 from .models import Category, Item
@@ -19,12 +19,6 @@ def _aware_midnight(day: date) -> datetime:
     return timezone.make_aware(naive_midnight)
 
 
-def categories_with_item_counts() -> QuerySet[Category]:
-    """返回全部栏目，并附加前台可见文章数 ``item_count``。"""
-    # Count 的 filter 参数让数据库只统计已发布文章；草稿不会出现在前台计数中。
-    return Category.objects.annotate(item_count=Count("items", filter=Q(items__is_published=True)))
-
-
 def homepage_items(limit: int = 24) -> QuerySet[Item]:
     """返回首页所需的有界已发布文章，预加载模板读取的外键。"""
     return (
@@ -32,18 +26,6 @@ def homepage_items(limit: int = 24) -> QuerySet[Item]:
         .select_related("category", "author")
         .order_by("-publish_time", "-pk")[:limit]
     )
-
-
-def published_items_for_category(category: Category | None = None) -> QuerySet[Item]:
-    """返回已发布文章；提供栏目主键时进一步限定所属栏目。"""
-    queryset = (
-        Item.objects.filter(is_published=True)
-        .select_related("category", "author")
-        .order_by("-publish_time", "-pk")
-    )
-    if category is not None:
-        queryset = queryset.filter(category=category)
-    return queryset
 
 
 def published_item_by_pk(pk: int) -> Item:
