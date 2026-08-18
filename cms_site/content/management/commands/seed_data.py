@@ -44,18 +44,18 @@ class SyncCounts:
                 assert_never(unreachable)
 
 
-PASSWORD_ENVIRONMENTS: Final = ("DEMO_USER_PASSWORD", "DEMO_ADMIN_PASSWORD")
+USER_PASSWORD_ENVIRONMENT: Final = "DEMO_USER_PASSWORD"
+ADMIN_USERNAME: Final = "CTX"
+ADMIN_PASSWORD: Final = "1234"
+LEGACY_ADMIN_USERNAMES: Final = ("cms_admin", "content_admin")
 
 
-def _passwords() -> dict[str, str]:
-    """在任何数据库写入前读取两个必需密码。"""
-    values: dict[str, str] = {}
-    for name in PASSWORD_ENVIRONMENTS:
-        value = os.environ.get(name)
-        if not value:
-            raise CommandError(f"缺少必需的演示密码环境变量：{name}")
-        values[name] = value
-    return values
+def _normal_user_password() -> str:
+    """在任何数据库写入前读取普通演示用户密码。"""
+    value = os.environ.get(USER_PASSWORD_ENVIRONMENT)
+    if not value:
+        raise CommandError(f"缺少必需的演示密码环境变量：{USER_PASSWORD_ENVIRONMENT}")
+    return value
 
 
 def _sync_user(spec: UserSpec, password: str) -> tuple[User, SyncResult]:
@@ -87,18 +87,25 @@ def _sync_user(spec: UserSpec, password: str) -> tuple[User, SyncResult]:
 class Command(BaseCommand):
     """同步用户、栏目和文章，重复执行不会产生重复记录。"""
 
-    help = "同步 4 个用户、8 个栏目和 36 篇北交大风格演示文章"
+    help = "同步 3 个用户、8 个栏目和 36 篇北交大风格演示文章"
 
     def handle(self, *args: str, **options: str) -> None:
-        passwords = _passwords()
+        normal_user_password = _normal_user_password()
         counts = SyncCounts()
 
         with transaction.atomic():
             users: dict[str, User] = {}
             for spec in USER_SPECS:
-                user, result = _sync_user(spec, passwords[spec.password_environment])
+                password = ADMIN_PASSWORD if spec.is_admin else normal_user_password
+                user, result = _sync_user(spec, password)
                 users[spec.username] = user
                 counts = counts.add(result)
+
+            administrator = users[ADMIN_USERNAME]
+            Item.objects.filter(author__username__in=LEGACY_ADMIN_USERNAMES).update(
+                author=administrator
+            )
+            User.objects.filter(username__in=LEGACY_ADMIN_USERNAMES).delete()
 
             categories: dict[str, Category] = {}
             for spec in CATEGORY_SPECS:
@@ -114,10 +121,9 @@ class Command(BaseCommand):
                 categories[spec.name] = category
                 counts = counts.add(result)
 
-            admin_usernames = ("cms_admin", "content_admin")
-            for index, spec in enumerate(ARTICLE_SPECS):
+            for spec in ARTICLE_SPECS:
                 category = categories[spec.category_name]
-                author = users[admin_usernames[index % len(admin_usernames)]]
+                author = administrator
                 existing = (
                     Item.objects.select_related("author")
                     .filter(title=spec.title, category=category)

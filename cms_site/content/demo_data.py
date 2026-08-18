@@ -34,7 +34,7 @@ class ArticleSpec:
         return (
             f"围绕“{self.title}”，学校结合近期工作安排组织了专题推进。"
             f"本项内容归入“{category.name}”栏目，重点回应师生关心的{category.focus}，"
-            "相关信息均为课程 CMS 演示所用的原创素材。\n\n"
+            "相关信息均为原创演示所用素材。\n\n"
             f"工作组已明确时间节点、参与范围和协同方式，并将关键成果纳入{category.description}。"
             "各单位依照公开流程提交材料，阶段结果由责任部门统一整理，确保安排可查询、"
             "进度可跟踪、结果可复核。\n\n"
@@ -45,11 +45,10 @@ class ArticleSpec:
 
 @dataclass(frozen=True, slots=True)
 class UserSpec:
-    """演示用户的角色和密码来源。"""
+    """演示用户的用户名与角色。"""
 
     username: str
     is_admin: bool
-    password_environment: str
 
 
 CATEGORY_SPECS: Final = (
@@ -64,10 +63,9 @@ CATEGORY_SPECS: Final = (
 )
 CATEGORY_BY_NAME: Final = MappingProxyType({spec.name: spec for spec in CATEGORY_SPECS})
 USER_SPECS: Final = (
-    UserSpec("student", False, "DEMO_USER_PASSWORD"),
-    UserSpec("visitor", False, "DEMO_USER_PASSWORD"),
-    UserSpec("cms_admin", True, "DEMO_ADMIN_PASSWORD"),
-    UserSpec("content_admin", True, "DEMO_ADMIN_PASSWORD"),
+    UserSpec("student", False),
+    UserSpec("visitor", False),
+    UserSpec("CTX", True),
 )
 
 type ArticleRow = tuple[str, str, int, int, int, bool]

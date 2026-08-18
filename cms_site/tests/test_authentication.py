@@ -25,9 +25,9 @@ class AuthenticationFlowTests(TestCase):
             is_staff=True,
         )
         cls.superuser = User.objects.create_superuser(
-            username="cms-admin",
+            username="CTX",
             email="admin@example.com",
-            password="test-password-2",
+            password="1234",
         )
 
     def test_anonymous_user_can_open_login_page(self) -> None:
@@ -50,7 +50,7 @@ class AuthenticationFlowTests(TestCase):
 
     def test_superuser_logs_in_with_admin_navigation(self) -> None:
         """超级用户登录后看到管理后台入口。"""
-        logged_in = self.client.login(username="cms-admin", password="test-password-2")
+        logged_in = self.client.login(username="CTX", password="1234")
 
         response = self.client.get(reverse("content:index"))
 

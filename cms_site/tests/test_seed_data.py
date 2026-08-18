@@ -61,20 +61,15 @@ EXPECTED_TITLES = {
 }
 SEED_ENV = {
     "DEMO_USER_PASSWORD": "User-pass-2026!",
-    "DEMO_ADMIN_PASSWORD": "Admin-pass-2026!",
 }
 
 
 class SeedDataTests(TestCase):
     """验证数据规模、角色、正文、时间与重复执行行为。"""
 
-    def test_requires_both_password_environment_variables(self) -> None:
-        """缺少任一密码时不写入部分数据。"""
-        incomplete_environments = (
-            {},
-            {"DEMO_USER_PASSWORD": SEED_ENV["DEMO_USER_PASSWORD"]},
-            {"DEMO_ADMIN_PASSWORD": SEED_ENV["DEMO_ADMIN_PASSWORD"]},
-        )
+    def test_requires_the_normal_user_password_environment_variable(self) -> None:
+        """缺少普通用户密码时不写入部分数据。"""
+        incomplete_environments = ({},)
 
         for environment in incomplete_environments:
             with (
@@ -98,24 +93,23 @@ class SeedDataTests(TestCase):
         self.assertEqual(Item.objects.count(), 36)
         self.assertEqual(Item.objects.filter(is_published=False).count(), 3)
 
-    def test_syncs_four_users_passwords_roles_and_authors(self) -> None:
-        """普通用户和管理员角色正确，文章只分配给两名管理员。"""
+    def test_syncs_ctx_administrator_password_roles_and_authors(self) -> None:
+        """普通用户和 CTX 管理员角色、密码及文章作者均正确。"""
         with patch.dict(os.environ, SEED_ENV, clear=True):
             call_command("seed_data")
 
         users = {user.username: user for user in User.objects.order_by("username")}
-        self.assertEqual(set(users), {"student", "visitor", "cms_admin", "content_admin"})
+        self.assertEqual(set(users), {"student", "visitor", "CTX"})
         for username in ("student", "visitor"):
             self.assertFalse(users[username].is_staff)
             self.assertFalse(users[username].is_superuser)
             self.assertTrue(users[username].check_password(SEED_ENV["DEMO_USER_PASSWORD"]))
-        for username in ("cms_admin", "content_admin"):
-            self.assertTrue(users[username].is_staff)
-            self.assertTrue(users[username].is_superuser)
-            self.assertTrue(users[username].check_password(SEED_ENV["DEMO_ADMIN_PASSWORD"]))
+        self.assertTrue(users["CTX"].is_staff)
+        self.assertTrue(users["CTX"].is_superuser)
+        self.assertTrue(users["CTX"].check_password("1234"))
         self.assertEqual(
             set(Item.objects.values_list("author__username", flat=True)),
-            {"cms_admin", "content_admin"},
+            {"CTX"},
         )
 
     def test_repeated_runs_are_idempotent_and_keep_three_paragraph_bodies(self) -> None:
@@ -128,15 +122,15 @@ class SeedDataTests(TestCase):
 
         self.assertEqual(Category.objects.count(), 8)
         self.assertEqual(Item.objects.count(), 36)
-        self.assertEqual(User.objects.count(), 4)
+        self.assertEqual(User.objects.count(), 3)
         self.assertEqual(Item.objects.filter(is_published=False).count(), 3)
         self.assertTrue(all(len(item.content.split("\n\n")) == 3 for item in Item.objects.all()))
         self.assertEqual(
             {value.year for value in Item.objects.values_list("publish_time", flat=True)},
             {2023, 2024, 2025, 2026},
         )
-        self.assertIn("创建 48，更新 0，跳过 0，草稿 3", first_output.getvalue())
-        self.assertIn("创建 0，更新 0，跳过 48，草稿 3", second_output.getvalue())
+        self.assertIn("创建 47，更新 0，跳过 0，草稿 3", first_output.getvalue())
+        self.assertIn("创建 0，更新 0，跳过 47，草稿 3", second_output.getvalue())
 
     def test_repeated_run_repairs_existing_seed_records(self) -> None:
         """自然键已存在时同步字段，而不是把损坏状态当作已完成。"""
@@ -174,5 +168,20 @@ class SeedDataTests(TestCase):
         self.assertNotEqual(category.description, "损坏的栏目简介")
         self.assertEqual(len(item.content.split("\n\n")), 3)
         self.assertEqual(item.is_published, expected_publish_state)
-        self.assertIn(item.author.username, {"cms_admin", "content_admin"})
-        self.assertIn("创建 0，更新 3，跳过 45，草稿 3", output.getvalue())
+        self.assertEqual(item.author.username, "CTX")
+        self.assertIn("创建 0，更新 3，跳过 44，草稿 3", output.getvalue())
+
+    def test_repeated_run_replaces_obsolete_seed_administrators(self) -> None:
+        """旧演示管理员的文章在删除账号前转交给 CTX。"""
+        legacy_admin = User.objects.create_superuser("cms_admin", password="legacy-password")
+        category = Category.objects.create(name="旧管理员栏目")
+        item = Item.objects.create(
+            title="旧管理员文章", content="正文", category=category, author=legacy_admin
+        )
+
+        with patch.dict(os.environ, SEED_ENV, clear=True):
+            call_command("seed_data")
+
+        item.refresh_from_db()
+        self.assertEqual(item.author.username, "CTX")
+        self.assertFalse(User.objects.filter(username="cms_admin").exists())
