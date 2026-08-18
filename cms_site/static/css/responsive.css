@@ -36,6 +36,29 @@
         border-left-color: var(--bjtu-gold);
     }
 
+    .bjtu-subNav {
+        position: static;
+        display: block;
+        width: auto;
+        min-width: 0;
+        box-shadow: none;
+    }
+
+    .nav-menu .bjtu-subNav a {
+        min-height: 2.5rem;
+        padding-left: var(--bjtu-space-10);
+        color: var(--bjtu-surface);
+        background: transparent;
+        font-size: var(--bjtu-text-sm);
+    }
+
+    .nav-menu .bjtu-subNav a:hover,
+    .nav-menu .bjtu-subNav a:focus-visible {
+        color: var(--bjtu-surface);
+        background: var(--bjtu-blue);
+        border-left-color: var(--bjtu-gold);
+    }
+
     .headline-layout {
         grid-template-columns: minmax(0, 1.3fr) minmax(15rem, 1fr);
     }
@@ -81,14 +104,6 @@
         grid-template-columns: 1fr;
     }
 
-    .campus-gallery {
-        grid-template-columns: 1fr;
-    }
-
-    .category-links {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
     .footer-disclosure {
         text-align: left;
     }
@@ -99,10 +114,6 @@
         width: min(calc(100% - var(--bjtu-space-6)), var(--bjtu-content-max));
     }
 
-    .prototype-label {
-        font-size: var(--bjtu-text-xs);
-    }
-
     .carousel-controls {
         right: var(--bjtu-space-3);
         bottom: var(--bjtu-space-3);
@@ -111,10 +122,6 @@
     .home-section,
     .page-shell {
         padding-block: var(--bjtu-space-8);
-    }
-
-    .category-links {
-        grid-template-columns: 1fr;
     }
 
     .section-heading {

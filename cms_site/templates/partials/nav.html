@@ -4,10 +4,9 @@
 <header class="site-header">
     <div class="brand-bar">
         <div class="bjtu-container brand-inner">
-            <a class="site-brand" href="{% url 'content:index' %}" aria-label="北京交通大学课程 CMS 首页">
+            <a class="site-brand" href="{% url 'content:index' %}" aria-label="北京交通大学首页">
                 <img src="{% static 'img/bjtu/logo.png' %}" width="228" height="61" alt="北京交通大学">
             </a>
-            <p class="prototype-label">课程 CMS 原型<br><span>非官方网站</span></p>
         </div>
     </div>
     <div class="nav-bar">
@@ -20,9 +19,20 @@
             </button>
             <ul class="nav-menu" id="site-nav-menu" data-nav-menu>
                 <li><a href="{% url 'content:index' %}" {% if url_name == 'index' %}aria-current="page"{% endif %}>首页</a></li>
-                <li><a href="{% url 'content:index' %}#special-categories">栏目</a></li>
-                <li><a href="{% url 'content:item_list' %}" {% if url_name == 'item_list' or url_name == 'item_detail' %}aria-current="page"{% endif %}>文章</a></li>
-                <li><a href="{% url 'content:search' %}" {% if url_name == 'search' %}aria-current="page"{% endif %}>查询</a></li>
+                <li class="nav-dropdown">
+                    <a href="{% url 'content:search' %}" aria-haspopup="true" {% if url_name == 'search' and request.GET.category %}aria-current="page"{% endif %}>栏目</a>
+                    <dl class="bjtu-subNav" aria-label="栏目列表">
+                        <dd><a href="{% url 'content:search' %}?category=交大头条">交大头条</a></dd>
+                        <dd><a href="{% url 'content:search' %}?category=通知公告">通知公告</a></dd>
+                        <dd><a href="{% url 'content:search' %}?category=教学科研">教学科研</a></dd>
+                        <dd><a href="{% url 'content:search' %}?category=校园动态">校园动态</a></dd>
+                        <dd><a href="{% url 'content:search' %}?category=招生就业">招生就业</a></dd>
+                        <dd><a href="{% url 'content:search' %}?category=学术活动">学术活动</a></dd>
+                        <dd><a href="{% url 'content:search' %}?category=国际交流">国际交流</a></dd>
+                        <dd><a href="{% url 'content:search' %}?category=信息公开">信息公开</a></dd>
+                    </dl>
+                </li>
+                <li><a href="{% url 'content:search' %}" {% if url_name == 'search' and not request.GET.category %}aria-current="page"{% endif %}>文章查询</a></li>
             </ul>
             <ul class="nav-menu account-menu" aria-label="用户导航">
                 {% if user.is_superuser %}<li><a href="{% url 'admin:index' %}">管理后台</a></li>{% endif %}

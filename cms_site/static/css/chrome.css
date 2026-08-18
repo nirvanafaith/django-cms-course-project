@@ -41,20 +41,6 @@
     height: auto;
 }
 
-.prototype-label {
-    margin: 0;
-    color: var(--bjtu-surface);
-    font-size: var(--bjtu-text-sm);
-    font-weight: 700;
-    line-height: 1.45;
-    text-align: right;
-}
-
-.prototype-label span {
-    font-size: var(--bjtu-text-xs);
-    font-weight: 400;
-}
-
 .nav-bar {
     background: var(--bjtu-nav-blue);
 }
@@ -104,6 +90,48 @@
 .nav-menu form {
     height: 100%;
     margin: 0;
+}
+
+.nav-dropdown {
+    position: relative;
+}
+
+.bjtu-subNav {
+    position: absolute;
+    top: 2.875rem;
+    left: 0;
+    z-index: 10;
+    display: none;
+    width: 150%;
+    min-width: 10rem;
+    margin: 0;
+    padding: 0;
+    background: var(--bjtu-blue-soft);
+    box-shadow: var(--bjtu-shadow);
+}
+
+.nav-dropdown:hover .bjtu-subNav,
+.nav-dropdown:focus-within .bjtu-subNav {
+    display: block;
+}
+
+.nav-menu .bjtu-subNav a {
+    width: 100%;
+    min-height: 2.0625rem;
+    justify-content: flex-start;
+    padding: var(--bjtu-space-2) var(--bjtu-space-4);
+    color: var(--bjtu-text);
+    background: var(--bjtu-blue-soft);
+    border-top: 0;
+    font-size: var(--bjtu-text-sm);
+    font-weight: 400;
+}
+
+.nav-menu .bjtu-subNav a:hover,
+.nav-menu .bjtu-subNav a:focus-visible {
+    color: var(--bjtu-surface);
+    background: var(--bjtu-blue);
+    border-top-color: transparent;
 }
 
 .nav-toggle {
