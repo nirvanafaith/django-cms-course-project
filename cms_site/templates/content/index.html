@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}首页 · 北京交通大学课程 CMS{% endblock %}
+{% block title %}首页 · 北京交通大学{% endblock %}
 {% block head_extra %}<link rel="preload" as="image" href="{% static 'img/bjtu/hero-01.jpg' %}" fetchpriority="high">{% endblock %}
 {% block main_class %}site-main home-main{% endblock %}
 {% block content %}
-<h1 class="visually-hidden">北京交通大学课程 CMS</h1>
+<h1 class="visually-hidden">北京交通大学</h1>
 <section class="hero-carousel" data-carousel aria-roledescription="轮播" aria-label="北京交通大学校园主题图片" tabindex="0">
     <div class="carousel-viewport">
         <figure class="carousel-slide is-active" data-slide aria-hidden="false">
@@ -41,7 +41,7 @@
 <section class="home-section bjtu-container" aria-labelledby="headline-title">
     <header class="section-heading bjtu-section-heading">
         <h2 id="headline-title">交大头条<span>BJTU HEADLINES</span></h2>
-        <a href="{% url 'content:item_list' %}?category={% if headline_items %}{{ headline_items.0.category.pk }}{% endif %}">查看全部</a>
+        <a class="section-more" href="{% url 'content:search' %}?category=交大头条">更多</a>
     </header>
     {% if headline_items %}
     <div class="headline-layout">
@@ -68,13 +68,13 @@
 <div class="home-band">
     <div class="bjtu-container dual-section">
         <section aria-labelledby="teaching-title">
-            <header class="section-heading bjtu-section-heading"><h2 id="teaching-title">教学科研<span>EDUCATION</span></h2></header>
+            <header class="section-heading bjtu-section-heading"><h2 id="teaching-title">教学科研<span>EDUCATION</span></h2><a class="section-more" href="{% url 'content:search' %}?category=教学科研">更多</a></header>
             <ul class="compact-news-list">
                 {% for item in teaching_items|slice:":5" %}<li><a href="{% url 'content:item_detail' item.pk %}">{{ item.title }}</a><time datetime="{{ item.publish_time|date:'c' }}">{{ item.publish_time|date:"Y-m-d" }}</time></li>{% empty %}<li class="muted-copy">暂无已发布内容。</li>{% endfor %}
             </ul>
         </section>
         <section aria-labelledby="campus-title">
-            <header class="section-heading bjtu-section-heading"><h2 id="campus-title">校园动态<span>CAMPUS</span></h2></header>
+            <header class="section-heading bjtu-section-heading"><h2 id="campus-title">校园动态<span>CAMPUS</span></h2><a class="section-more" href="{% url 'content:search' %}?category=校园动态">更多</a></header>
             <ul class="compact-news-list">
                 {% for item in campus_items|slice:":5" %}<li><a href="{% url 'content:item_detail' item.pk %}">{{ item.title }}</a><time datetime="{{ item.publish_time|date:'c' }}">{{ item.publish_time|date:"Y-m-d" }}</time></li>{% empty %}<li class="muted-copy">暂无已发布内容。</li>{% endfor %}
             </ul>
@@ -83,35 +83,10 @@
 </div>
 
 <section class="home-section bjtu-container" aria-labelledby="notice-title">
-    <header class="section-heading bjtu-section-heading"><h2 id="notice-title">通知公告<span>NOTICES</span></h2><a href="{% url 'content:search' %}">查询公告</a></header>
+    <header class="section-heading bjtu-section-heading"><h2 id="notice-title">通知公告<span>NOTICES</span></h2><a class="section-more" href="{% url 'content:search' %}?category=通知公告">更多</a></header>
     <ul class="notice-list">
         {% for item in notice_items|slice:":5" %}<li><time datetime="{{ item.publish_time|date:'c' }}"><strong>{{ item.publish_time|date:"d" }}</strong><span>{{ item.publish_time|date:"Y-m" }}</span></time><a href="{% url 'content:item_detail' item.pk %}">{{ item.title }}</a></li>{% empty %}<li class="muted-copy">暂无已发布公告。</li>{% endfor %}
     </ul>
 </section>
 
-<section class="gallery-band" aria-labelledby="gallery-title">
-    <div class="bjtu-container">
-        <header class="section-heading gallery-heading"><h2 id="gallery-title">校园影像<span>CAMPUS VISION</span></h2></header>
-        <div class="campus-gallery">
-            <figure><img src="{% static 'img/bjtu/hero-03.jpg' %}" width="2480" height="801" alt="北京交通大学校园影像展示一" loading="lazy"><figcaption>校园影像</figcaption></figure>
-            <figure><img src="{% static 'img/bjtu/hero-04.jpg' %}" width="2480" height="801" alt="北京交通大学校园影像展示二" loading="lazy"><figcaption>校园风貌</figcaption></figure>
-            <figure><img src="{% static 'img/bjtu/hero-05.jpg' %}" width="2480" height="801" alt="北京交通大学校园影像展示三" loading="lazy"><figcaption>交大印象</figcaption></figure>
-        </div>
-    </div>
-</section>
-
-<section id="special-categories" class="category-band" aria-labelledby="category-title">
-    <div class="bjtu-container">
-        <header class="section-heading bjtu-section-heading"><h2 id="category-title">专题栏目<span>CHANNELS</span></h2></header>
-        {% if categories %}
-        <ul class="category-links">
-            {% for category in categories %}
-            <li><a href="{% url 'content:item_list' %}?category={{ category.pk }}"><span>{{ category.name }}</span><small>{{ category.item_count }} 篇</small></a></li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <div class="empty-state" role="status"><h3>暂无栏目</h3><p>管理员创建栏目后将在这里显示。</p></div>
-        {% endif %}
-    </div>
-</section>
 {% endblock %}
