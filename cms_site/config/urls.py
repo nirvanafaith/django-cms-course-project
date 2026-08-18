@@ -38,6 +38,6 @@ handler404 = "core.views.handler404"
 handler500 = "core.views.handler500"
 
 # Admin 站点标题中文化
-admin.site.site_header = "CMS 原型系统管理后台"
-admin.site.site_title = "CMS 管理"
+admin.site.site_header = "北京交通大学管理后台"
+admin.site.site_title = "北京交通大学管理"
 admin.site.index_title = "内容管理"

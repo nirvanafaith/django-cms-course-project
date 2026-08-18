@@ -27,9 +27,9 @@ class BjtuTemplateTests(TestCase):
         """创建覆盖首页栏目分区和三种角色的最小数据。"""
         cls.normal_user = User.objects.create_user("student", password="test-password-1")
         cls.admin_user = User.objects.create_superuser(
-            "cms_admin",
+            "CTX",
             email="admin@example.com",
-            password="test-password-2",
+            password="1234",
         )
         categories = {
             spec.name: Category.objects.create(name=spec.name, description=spec.description)
@@ -74,26 +74,37 @@ class BjtuTemplateTests(TestCase):
             "教学科研",
             "校园动态",
             "通知公告",
-            "校园影像",
-            "专题栏目",
         ):
             with self.subTest(heading=heading):
                 self.assertContains(response, f">{heading}<")
+        for removed_heading in ("校园影像", "专题栏目"):
+            with self.subTest(removed_heading=removed_heading):
+                self.assertNotContains(response, removed_heading)
+        for category in Category.objects.order_by("id"):
+            with self.subTest(category=category.name):
+                self.assertContains(
+                    response,
+                    f"{reverse('content:search')}?category={category.name}",
+                )
+        self.assertContains(response, 'class="section-more"', count=4)
         self.assertContains(response, "<h1", html=False)
         self.assertNotContains(response, 'alt=""')
 
     def test_global_navigation_and_footer_match_the_approved_contract(self) -> None:
-        """导航、地址、邮编、来源与非官网声明保持一致。"""
+        """导航、地址、邮编和素材来源入口保持一致。"""
         response = self.client.get(reverse("content:index"))
 
-        for label in ("首页", "栏目", "文章", "查询"):
+        for label in ("首页", "栏目", "文章查询"):
             with self.subTest(label=label):
                 self.assertContains(response, f">{label}<")
+        self.assertNotContains(response, ">文章<")
         self.assertContains(response, "北京市海淀区上园村3号北京交通大学")
         self.assertContains(response, "邮编：100044")
-        self.assertContains(response, "课程 CMS 原型，非官方网站")
         self.assertContains(response, "北交大官网素材来源与许可")
         self.assertNotContains(response, "ICP备")
+        for marker in ("课程 CMS 原型", "非官方网站", "CMS 原型"):
+            with self.subTest(marker=marker):
+                self.assertNotContains(response, marker)
 
     def test_navigation_reflects_anonymous_normal_and_admin_roles(self) -> None:
         """三种身份只显示其可用入口。"""
@@ -115,7 +126,6 @@ class BjtuTemplateTests(TestCase):
     def test_public_pages_have_page_specific_semantic_titles(self) -> None:
         """列表、搜索、详情和登录页面各有唯一主标题。"""
         pages = (
-            (reverse("content:item_list"), "文章列表"),
             (reverse("content:search"), "文章查询"),
             (reverse("content:item_detail", args=[self.headline.pk]), self.headline.title),
             (reverse("login"), "用户登录"),
@@ -136,7 +146,10 @@ class BjtuTemplateTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "/static/img/bjtu/logo.png")
-        self.assertContains(response, "北京交通大学课程 CMS 管理后台")
+        self.assertContains(response, "北京交通大学管理后台")
         self.assertContains(response, "内容管理")
         self.assertContains(response, "认证和授权")
         self.assertNotContains(response, 'src="http')
+        for marker in ("课程 CMS 原型", "非官方网站", "CMS 原型"):
+            with self.subTest(marker=marker):
+                self.assertNotContains(response, marker)
