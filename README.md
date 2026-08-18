@@ -10,11 +10,11 @@
 
 ## 功能与数据
 
-- 公开路由：`/`、`/list/`、`/search/`、`/item/<pk>/`。
+- 公开路由：`/`、`/search/`、`/item/<pk>/`。
 - 管理路由：`/admin/`、`/admin/system-logs/`；只有超级用户可以进入。
 - 已发布内容支持题目、上海自然日发表时间、栏目三个条件的任意组合；草稿不会出现在公开页面。
-- `seed_data` 幂等生成 8 个栏目、36 篇文章（其中 3 篇草稿）和 4 个用户。普通用户为 `student`、`visitor`，管理员为 `cms_admin`、`content_admin`。
-- 演示密码只通过 `DEMO_USER_PASSWORD` 与 `DEMO_ADMIN_PASSWORD` 环境变量提供，绝不写入仓库或交付文档。
+- `seed_data` 幂等生成 8 个栏目、36 篇文章（其中 3 篇草稿）和 3 个用户。普通用户为 `student`、`visitor`，管理员为 `CTX`。
+- 管理员账号固定为 `CTX`，密码为 `1234`；普通演示用户密码通过 `DEMO_USER_PASSWORD` 环境变量提供。
 
 ## Docker Compose 快速开始
 
@@ -24,7 +24,6 @@
 $env:DJANGO_SECRET_KEY='使用密码管理器生成的随机长密钥'
 $env:POSTGRES_PASSWORD='为数据库账户生成的独立随机密码'
 $env:DEMO_USER_PASSWORD='为普通演示用户设置的临时密码'
-$env:DEMO_ADMIN_PASSWORD='为管理员演示用户设置的独立临时密码'
 docker compose up --build --wait
 ```
 
@@ -69,3 +68,4 @@ Invoke-WebRequest http://127.0.0.1:8000/health/ready/
 | `docs/11_核心模块答辩说明.md` | 核心模块解释提纲 |
 | `docs/12_北交大官网素材来源与许可.md` | 本地素材来源与许可记录 |
 | `docs/13_作业要求符合性矩阵.md` | 需求到代码、测试和证据的追溯 |
+| `docs/14_项目技术选型与答辩教案.md` | 面向编程小白的完整技术选型、通信链路和答辩教案 |
